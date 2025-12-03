@@ -12,23 +12,22 @@ async fn main() {
 
 */
 
-
 use dotenvy::dotenv;
 use tokio::sync::mpsc;
-use tracing::{info, error};
+use tracing::{error, info};
 use tracing_subscriber;
 
-mod config;
-mod modbus;
 mod buffer;
-mod publisher;
+mod config;
 mod engine;
+mod modbus;
+mod publisher;
 
+use crate::buffer::HybridBuffer;
 use crate::config::Settings;
 use crate::modbus::ModbusAdapter;
-use crate::buffer::HybridBuffer;
 use crate::publisher::Publisher;
-use historian_core::SensorData; 
+use historian_core::SensorData;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -43,14 +42,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         error!("Failed to load configuration: {}", e);
         e
     })?;
-    
+
     info!("Configuration loaded");
 
     // 3. Hybrid Buffer ve Publisher oluştur
-    let buffer = HybridBuffer::new(
-        settings.buffer.memory_capacity,
-        settings.buffer.disk_path
-    );
+    let buffer = HybridBuffer::new(settings.buffer.memory_capacity, settings.buffer.disk_path);
 
     let mut publisher = Publisher::new(buffer, settings.nats.url.clone());
 
@@ -68,7 +64,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 6. Engine'i başlat (Ayrı task)
     use crate::engine::Engine;
     let mut engine = Engine::new(settings.calculated_tags);
-    
+
     tokio::spawn(async move {
         info!("Calculation Engine started");
         while let Some(data) = rx_raw.recv().await {

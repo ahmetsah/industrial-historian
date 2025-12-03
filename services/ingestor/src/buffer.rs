@@ -1,10 +1,10 @@
+use anyhow::Result;
+use historian_core::SensorData;
+use prost::Message;
 use std::collections::VecDeque;
+use std::path::PathBuf;
 use tokio::fs::{self, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use prost::Message;
-use historian_core::SensorData;
-use std::path::PathBuf;
-use anyhow::Result;
 
 pub struct RingBuffer<T> {
     buffer: VecDeque<T>,
@@ -58,10 +58,10 @@ impl DiskBuffer {
             .append(true)
             .open(&self.file_path)
             .await?;
-        
+
         let mut buf = Vec::new();
         item.encode(&mut buf)?;
-        
+
         let len = buf.len() as u32;
         file.write_u32(len).await?;
         file.write_all(&buf).await?;
@@ -87,16 +87,16 @@ impl DiskBuffer {
             // Read length (u32)
             let mut len_buf = [0u8; 4];
             if std::io::Read::read_exact(&mut cursor, &mut len_buf).is_err() {
-                break; 
+                break;
             }
             let len = u32::from_be_bytes(len_buf) as usize;
-            
+
             // Read protobuf message
             let mut msg_buf = vec![0u8; len];
             if std::io::Read::read_exact(&mut cursor, &mut msg_buf).is_err() {
                 break;
             }
-            
+
             let item = SensorData::decode(&msg_buf[..])?;
             items.push(item);
         }
@@ -133,7 +133,7 @@ impl HybridBuffer {
     pub fn pop_mem(&mut self) -> Option<SensorData> {
         self.mem_buffer.pop()
     }
-    
+
     pub async fn flush_disk(&self) -> Result<Vec<SensorData>> {
         self.disk_buffer.read_all_and_clear().await
     }
@@ -158,7 +158,7 @@ mod tests {
     async fn test_disk_buffer() {
         let path = "test_buffer.wal";
         let db = DiskBuffer::new(path);
-        
+
         // Clean up before test
         let _ = fs::remove_file(path).await;
 
@@ -190,12 +190,22 @@ mod tests {
     async fn test_hybrid_buffer_spill() {
         let path = "test_hybrid.wal";
         let _ = fs::remove_file(path).await;
-        
+
         // Capacity 1. Push 2 items. 1st should spill to disk.
         let mut hb = HybridBuffer::new(1, path);
 
-        let item1 = SensorData { sensor_id: "s1".to_string(), value: 1.0, timestamp_ms: 100, quality: 1 };
-        let item2 = SensorData { sensor_id: "s2".to_string(), value: 2.0, timestamp_ms: 200, quality: 1 };
+        let item1 = SensorData {
+            sensor_id: "s1".to_string(),
+            value: 1.0,
+            timestamp_ms: 100,
+            quality: 1,
+        };
+        let item2 = SensorData {
+            sensor_id: "s2".to_string(),
+            value: 2.0,
+            timestamp_ms: 200,
+            quality: 1,
+        };
 
         hb.push(item1.clone()).await.unwrap(); // Buffer: [s1]
         hb.push(item2.clone()).await.unwrap(); // Buffer: [s2], Disk: [s1]
@@ -209,7 +219,7 @@ mod tests {
         let disk_items = hb.flush_disk().await.unwrap();
         assert_eq!(disk_items.len(), 1);
         assert_eq!(disk_items[0].sensor_id, "s1");
-        
+
         let _ = fs::remove_file(path).await;
     }
 }

@@ -1,11 +1,11 @@
-use tokio_modbus::prelude::*;
-use tokio_modbus::client::Context;
-use std::time::Duration;
-use std::net::SocketAddr;
 use crate::config::ModbusConfig;
 use anyhow::Result;
 use historian_core::SensorData;
+use std::net::SocketAddr;
+use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tokio_modbus::client::Context;
+use tokio_modbus::prelude::*;
 
 use tokio::sync::mpsc;
 
@@ -27,16 +27,16 @@ impl ModbusAdapter {
     pub async fn connect(&mut self) -> Result<()> {
         let addr_str = format!("{}:{}", self.config.ip, self.config.port);
         let addr: SocketAddr = addr_str.parse()?;
-        
-        // Note: In real implementation we might need to handle Unit ID if using RTU over TCP, 
+
+        // Note: In real implementation we might need to handle Unit ID if using RTU over TCP,
         // but for pure TCP usually Unit ID is handled in the request or connection.
         // tokio-modbus tcp::connect returns a Context.
-        
+
         let mut ctx = tcp::connect(addr).await?;
-        
+
         // Set the Unit ID (Slave ID)
         ctx.set_slave(Slave(self.config.unit_id));
-        
+
         self.ctx = Some(ctx);
         Ok(())
     }
@@ -79,23 +79,25 @@ impl ModbusAdapter {
                     "Float32" => 2,
                     _ => 1,
                 };
-                
-                let data = ctx.read_holding_registers(reg_config.address, count).await?;
+
+                let data = ctx
+                    .read_holding_registers(reg_config.address, count)
+                    .await?;
                 // In some versions/configurations, read_holding_registers might return a Result<Vec<u16>, ExceptionCode> inside the outer Result?
                 // Or maybe the outer Result is the IO error, and the inner is the Modbus exception?
                 // Based on the error message, 'data' is Result<Vec<u16>, ExceptionCode>.
                 // So we need to handle the inner result.
                 let data = data.map_err(|e| anyhow::anyhow!("Modbus Exception: {:?}", e))?;
-                
+
                 let value = convert_registers(&data, &reg_config.data_type)?;
-                
+
                 let sensor_data = SensorData {
                     sensor_id: reg_config.name.clone(),
                     value,
                     timestamp_ms: SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as i64,
                     quality: 1,
                 };
-                
+
                 tracing::info!("Read sensor: {:?}", sensor_data);
                 if let Err(e) = self.sender.send(sensor_data).await {
                     tracing::error!("Failed to send sensor data: {}", e);

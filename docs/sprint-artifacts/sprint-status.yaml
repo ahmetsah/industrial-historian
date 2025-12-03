@@ -55,11 +55,11 @@ development_status:
   2-3-calculated-tags-engine: done
   epic-2-retrospective: completed
 
-  epic-3: backlog
-  3-1-lsm-tree-storage-engine-rust: backlog
-  3-2-tiered-storage-manager: backlog
-  3-3-grpc-query-api: backlog
-  epic-3-retrospective: optional
+  epic-3: done
+  3-1-lsm-tree-storage-engine-rust: done
+  3-2-tiered-storage-manager: done
+  3-3-grpc-query-api: done
+  epic-3-retrospective: completed
 
   epic-4: backlog
   4-1-real-time-dashboard-framework: backlog

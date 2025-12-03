@@ -2,16 +2,56 @@
 ip = "172.29.80.1"   # Windows IP adresiniz
 port = 5020
 unit_id = 1
-poll_interval_ms = 1000
+poll_interval_ms = 1
 
 [[modbus.registers]]
 address = 0
-name = "Temperature"
+name = "adres_0"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 1
+name = "adres_1"
 data_type = "Int16"
 
 [[modbus.registers]]
 address = 2
-name = "Pressure"
+name = "adres_2"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 3
+name = "adres_3"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 4
+name = "adres_4"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 5
+name = "adres_5"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 6
+name = "adres_6"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 7
+name = "adres_7"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 8
+name = "adres_8"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 9
+name = "adres_9"
 data_type = "Int16"
 
 [nats]
@@ -22,10 +62,10 @@ subject = "data.raw"
 memory_capacity = 10000
 disk_path = "ops/data/ingestor_wal"
 
-[[calculated_tags]]
+[[calculations]]
 name = "Delta_P"
 expression = "Pressure - 10"
 
-[[calculated_tags]]
+[[calculations]]
 name = "Efficiency"
 expression = "(Temperature / Pressure) * 100"

@@ -16,7 +16,7 @@ echo "Creating EVENTS stream config..."
 cat <<EOF > /tmp/events_stream.json
 {
   "name": "EVENTS",
-  "subjects": ["enterprise.>"],
+  "subjects": ["data.>"],
   "retention": "limits",
   "max_consumers": -1,
   "max_msgs": -1,

@@ -1,12 +1,12 @@
 # Rust
 /target
 **/*.rs.bk
-Cargo.lock
+#Cargo.lock
 
 # Go
 /go-services/**/bin/
 /go-services/**/vendor/
-/go-services/**/go.sum
+#/go-services/**/go.sum
 /bin/
 
 # Node / Frontend
@@ -29,3 +29,4 @@ pnpm-debug.log*
 # Ops
 /ops/data/
 /ops/logs/
+/data/

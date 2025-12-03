@@ -20,12 +20,10 @@ pub fn decompress_points(data: &[u8]) -> Result<Vec<(i64, f64)>> {
     let mut decoder = StdDecoder::new(reader);
     let mut points = Vec::new();
 
-    loop {
-        match decoder.next() {
-            Ok(dp) => points.push((dp.get_time() as i64, dp.get_value())),
-            Err(_) => break,
-        }
+    while let Ok(dp) = decoder.next() {
+        points.push((dp.get_time() as i64, dp.get_value()));
     }
+
     Ok(points)
 }
 

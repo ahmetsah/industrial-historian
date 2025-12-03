@@ -151,7 +151,7 @@ impl StorageEngine for RocksDBStorage {
         let mut entry = self
             .buffer
             .entry(data.sensor_id.clone())
-            .or_insert_with(Vec::new);
+            .or_default();
         entry.push((data.timestamp_ms, data.value));
 
         if entry.len() >= BUFFER_SIZE {

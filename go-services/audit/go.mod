@@ -1,3 +1,3 @@
-module github.com/ahmet/historian/go-services/audit
+module github.com/ahmetsah/industrial-historian/go-services/audit
 
 go 1.22

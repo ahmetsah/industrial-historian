@@ -1,4 +1,4 @@
-module github.com/ahmet/historian/go-services/auth
+module github.com/ahmetsah/industrial-historian/go-services/auth
 
 go 1.24.0
 

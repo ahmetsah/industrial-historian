@@ -1,4 +1,4 @@
-module github.com/ahmet/historian/go-services/pkg/proto
+module github.com/ahmetsah/industrial-historian/go-services/pkg/proto
 
 go 1.23
 

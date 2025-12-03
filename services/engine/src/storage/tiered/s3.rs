@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use anyhow::{Context, Result};
 use s3::bucket::Bucket;
 use s3::creds::Credentials;

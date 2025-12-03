@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ahmet/historian/go-services/auth/internal/repository"
-	"github.com/ahmet/historian/go-services/auth/internal/service"
+	"github.com/ahmetsah/industrial-historian/go-services/auth/internal/repository"
+	"github.com/ahmetsah/industrial-historian/go-services/auth/internal/service"
 	"golang.org/x/crypto/bcrypt"
 )
 

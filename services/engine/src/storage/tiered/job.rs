@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::storage::rocksdb::RocksDBStorage;
 use crate::storage::tiered::policy::TieringPolicy;
 use crate::storage::tiered::s3::S3Client;

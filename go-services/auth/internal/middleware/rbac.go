@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/ahmet/historian/go-services/auth/internal/service"
+	"github.com/ahmetsah/industrial-historian/go-services/auth/internal/service"
 	"github.com/golang-jwt/jwt/v5"
 )
 

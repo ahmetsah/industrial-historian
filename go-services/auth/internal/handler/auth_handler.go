@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ahmet/historian/go-services/auth/internal/repository"
-	"github.com/ahmet/historian/go-services/auth/internal/service"
+	"github.com/ahmetsah/industrial-historian/go-services/auth/internal/repository"
+	"github.com/ahmetsah/industrial-historian/go-services/auth/internal/service"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/nats-io/nats.go"
 	"golang.org/x/crypto/bcrypt"

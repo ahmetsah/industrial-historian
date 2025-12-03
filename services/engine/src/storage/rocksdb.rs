@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::storage::compression::compress_points;
 use crate::storage::tiered::s3::S3Client;
 use crate::storage::StorageEngine;
@@ -245,7 +246,7 @@ impl StorageEngine for RocksDBStorage {
         // rust-rocksdb iterator doesn't expose seek_for_prev easily in the high-level loop.
         // We'll proceed with forward scan from start_ts for now.
         let start_key = Self::generate_key(sensor_id, start_ts);
-        let mut iter = self.db.iterator(rocksdb::IteratorMode::From(
+        let iter = self.db.iterator(rocksdb::IteratorMode::From(
             &start_key,
             rocksdb::Direction::Forward,
         ));
@@ -297,7 +298,7 @@ impl StorageEngine for RocksDBStorage {
                     .cf_handle("tiering_metadata")
                     .context("CF not found")?;
                 let start_key = Self::generate_key(sensor_id, start_ts);
-                let mut iter = self.db.iterator_cf(
+                let iter = self.db.iterator_cf(
                     &cf,
                     rocksdb::IteratorMode::From(&start_key, rocksdb::Direction::Forward),
                 );

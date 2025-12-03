@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "github.com/ahmetsah/industrial-historian/go-services/pkg/proto";
+
 package historian.v1;
 
 import "common.proto";

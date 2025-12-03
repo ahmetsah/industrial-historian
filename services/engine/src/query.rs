@@ -96,7 +96,7 @@ impl HistorianQuery for QueryService {
 
         tokio::spawn(async move {
             for point in final_points {
-                if let Err(_) = tx.send(Ok(point)).await {
+                if (tx.send(Ok(point)).await).is_err() {
                     break;
                 }
             }

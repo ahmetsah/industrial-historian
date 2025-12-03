@@ -12,7 +12,6 @@ pub struct RingBuffer<T> {
 }
 
 impl<T> RingBuffer<T> {
-
     #[allow(dead_code)]
     pub fn new(capacity: usize) -> Self {
         Self {

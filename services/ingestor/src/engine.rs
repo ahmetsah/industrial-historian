@@ -2,8 +2,8 @@ use crate::config::CalculatedTagConfig;
 use evalexpr::{eval_with_context, ContextWithMutableVariables, HashMapContext};
 use historian_core::SensorData;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::{error, info};
-//use tracing::error;
+//use tracing::{error, info};
+use tracing::error;
 
 pub struct Engine {
     context: HashMapContext,

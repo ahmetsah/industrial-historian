@@ -12,8 +12,8 @@ pub struct RingBuffer<T> {
 }
 
 impl<T> RingBuffer<T> {
-    #[allow(dead_code)]
 
+    #[allow(dead_code)]
     pub fn new(capacity: usize) -> Self {
         Self {
             buffer: VecDeque::with_capacity(capacity),
@@ -85,7 +85,7 @@ impl DiskBuffer {
 
         let mut items = Vec::new();
         let mut cursor = std::io::Cursor::new(content);
-        use std::io::Read;
+        //use std::io::Read;
 
         while cursor.position() < cursor.get_ref().len() as u64 {
             // Read length (u32)

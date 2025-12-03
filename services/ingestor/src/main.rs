@@ -15,7 +15,7 @@ async fn main() {
 use dotenvy::dotenv;
 use tokio::sync::mpsc;
 use tracing::{error, info};
-use tracing_subscriber;
+//use tracing_subscriber;
 
 mod buffer;
 mod config;

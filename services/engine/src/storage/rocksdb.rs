@@ -7,6 +7,8 @@ use dashmap::DashMap;
 use historian_core::SensorData;
 use rocksdb::{Options, DB};
 use std::sync::Arc;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 
 const BUFFER_SIZE: usize = 1000;
 
@@ -357,6 +359,136 @@ impl StorageEngine for RocksDBStorage {
         points.dedup_by_key(|p| p.timestamp_ms);
 
         Ok(points)
+    }
+
+    fn scan_stream(
+        &self,
+        sensor_id: &str,
+        start_ts: i64,
+        end_ts: i64,
+    ) -> Result<std::pin::Pin<Box<dyn futures::Stream<Item = Result<SensorData>> + Send>>> {
+        let (tx, rx) = mpsc::channel(1000);
+        let db = self.db.clone();
+        let buffer = self.buffer.clone();
+        let s3_client = self.s3_client.clone();
+        let sensor_id = sensor_id.to_string();
+
+        tokio::spawn(async move {
+            // 1. S3 (Cold Tier)
+            if let Some(client) = s3_client {
+                let mut s3_keys = Vec::new();
+                // Blocking RocksDB access for metadata
+                {
+                    let db_clone = db.clone();
+                    let sensor_id_clone = sensor_id.clone();
+                    let res = tokio::task::spawn_blocking(move || -> Result<Vec<String>> {
+                        let cf = db_clone.cf_handle("tiering_metadata").context("CF not found")?;
+                        let start_key = RocksDBStorage::generate_key(&sensor_id_clone, start_ts);
+                        let iter = db_clone.iterator_cf(
+                            &cf,
+                            rocksdb::IteratorMode::From(&start_key, rocksdb::Direction::Forward),
+                        );
+                        let mut keys = Vec::new();
+                        for item in iter {
+                            let (k, v) = item?;
+                             if k.len() < 9 { continue; }
+                            let ts_start = k.len() - 8;
+                            let sensor_bytes = &k[0..ts_start - 1];
+                            let stored_sensor_id = String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
+                            if stored_sensor_id != sensor_id_clone { break; }
+                            let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
+                            let block_start_ts = i64::from_be_bytes(ts_bytes);
+                            if block_start_ts > end_ts { break; }
+                            keys.push(String::from_utf8(v.to_vec())?);
+                        }
+                        Ok(keys)
+                    }).await;
+                    
+                    if let Ok(Ok(keys)) = res {
+                        s3_keys = keys;
+                    }
+                }
+
+                for s3_key in s3_keys {
+                    if let Ok(data) = client.get_object(&s3_key).await {
+                         use crate::storage::compression::decompress_points;
+                         if let Ok(decompressed) = decompress_points(&data) {
+                             for (ts, val) in decompressed {
+                                 if ts >= start_ts && ts <= end_ts {
+                                     let point = SensorData {
+                                         sensor_id: sensor_id.clone(),
+                                         timestamp_ms: ts,
+                                         value: val,
+                                         quality: 1,
+                                     };
+                                     if tx.send(Ok(point)).await.is_err() { return; }
+                                 }
+                             }
+                         }
+                    }
+                }
+            }
+
+            // 2. RocksDB (Hot Tier)
+            {
+                let db_clone = db.clone();
+                let sensor_id_clone = sensor_id.clone();
+                let tx_clone = tx.clone();
+                
+                let _ = tokio::task::spawn_blocking(move || {
+                    let start_key = RocksDBStorage::generate_key(&sensor_id_clone, start_ts);
+                    let iter = db_clone.iterator(rocksdb::IteratorMode::From(
+                        &start_key,
+                        rocksdb::Direction::Forward,
+                    ));
+                    
+                    for item in iter {
+                        if let Ok((k, v)) = item {
+                             if k.len() < 9 { continue; }
+                             let ts_start = k.len() - 8;
+                             let sensor_bytes = &k[0..ts_start - 1];
+                             let stored_sensor_id = String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
+                             if stored_sensor_id != sensor_id_clone { break; }
+                             let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
+                             let block_start_ts = i64::from_be_bytes(ts_bytes);
+                             if block_start_ts > end_ts { break; }
+                             
+                             use crate::storage::compression::decompress_points;
+                             if let Ok(decompressed) = decompress_points(&v) {
+                                 for (ts, val) in decompressed {
+                                     if ts >= start_ts && ts <= end_ts {
+                                         let point = SensorData {
+                                             sensor_id: sensor_id_clone.clone(),
+                                             timestamp_ms: ts,
+                                             value: val,
+                                             quality: 1,
+                                         };
+                                         if tx_clone.blocking_send(Ok(point)).is_err() { return; }
+                                     }
+                                 }
+                             }
+                        }
+                    }
+                }).await;
+            }
+
+            // 3. Buffer
+            if let Some(entry) = buffer.get(&sensor_id) {
+                for (ts, val) in entry.iter() {
+                    if *ts >= start_ts && *ts <= end_ts {
+                        let point = SensorData {
+                            sensor_id: sensor_id.clone(),
+                            timestamp_ms: *ts,
+                            value: *val,
+                            quality: 1,
+                        };
+                        if tx.send(Ok(point)).await.is_err() { return; }
+                    }
+                }
+            }
+        });
+
+        Ok(Box::pin(ReceiverStream::new(rx)))
     }
 }
 

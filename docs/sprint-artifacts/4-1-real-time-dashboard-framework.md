@@ -1,6 +1,6 @@
 # Story 4.1: Real-time Dashboard Framework
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -10,41 +10,42 @@ Status: ready-for-dev
 
 ## Acceptance Criteria
 
-1.  **Given** the React application
-2.  **When** I drag and drop a "Chart Widget"
-3.  **Then** I can configure it to listen to a specific NATS subject
-4.  **And** the layout is saved to local storage
-5.  **And** the layout persists across page reloads
+1.  ✅ **Given** the React application
+2.  ✅ **When** I drag and drop a "Chart Widget"
+3.  ✅ **Then** I can configure it to listen to a specific NATS subject
+4.  ✅ **And** the layout is saved to local storage
+5.  ✅ **And** the layout persists across page reloads
 
 ## Tasks / Subtasks
 
-- [ ] **Initialize Dashboard Feature**
-  - [ ] Create directory structure: `viz/src/features/dashboard/{components,stores,types}`
-  - [ ] Define `DashboardWidget` type (id, type, position, config)
+- [x] **Initialize Dashboard Feature**
+  - [x] Create directory structure: `viz/src/features/dashboard/{components,stores,types}`
+  - [x] Define `DashboardWidget` type (id, type, position, config)
 
-- [ ] **State Management (Zustand)**
-  - [ ] Install `zustand` (v5+)
-  - [ ] Create `useDashboardStore` in `viz/src/features/dashboard/stores/useDashboardStore.ts`
-  - [ ] Implement `addWidget`, `removeWidget`, `updateLayout` actions
-  - [ ] Use `persist` middleware to save state to `localStorage`
-  - [ ] **Constraint:** Separate actions from state object (best practice)
+- [x] **State Management (Zustand)**
+  - [x] Install `zustand` (v5+)
+  - [x] Create `useDashboardStore` in `viz/src/features/dashboard/stores/useDashboardStore.ts`
+  - [x] Implement `addWidget`, `removeWidget`, `updateWidget`, `updateLayout` actions
+  - [x] Use `persist` middleware to save state to `localStorage`
+  - [x] **Constraint:** Separate actions from state object (best practice)
 
-- [ ] **Grid Layout Implementation**
-  - [ ] Install `react-grid-layout` and `@types/react-grid-layout`
-  - [ ] Create `DashboardLayout` component in `viz/src/features/dashboard/components/DashboardLayout.tsx`
-  - [ ] Implement `ResponsiveReactGridLayout` with `WidthProvider`
-  - [ ] Configure breakpoints (`lg`, `md`, `sm`, `xs`, `xxs`) and columns
-  - [ ] Handle `onLayoutChange` to update Zustand store
+- [x] **Grid Layout Implementation**
+  - [x] Install `react-grid-layout` and `@types/react-grid-layout`
+  - [x] Create `DashboardLayout` component in `viz/src/features/dashboard/components/DashboardLayout.tsx`
+  - [x] Implement `ResponsiveReactGridLayout` with `WidthProvider`
+  - [x] Configure breakpoints (`lg`, `md`, `sm`, `xs`, `xxs`) and columns
+  - [x] Handle `onLayoutChange` to update Zustand store
 
-- [ ] **Widget Component**
-  - [ ] Create `DashboardWidget` wrapper component
-  - [ ] Implement "Edit Mode" toggle (only allow dragging/resizing in edit mode)
-  - [ ] Add "Remove" button to widget header
-  - [ ] Create a placeholder content for widgets (Real charts come in Story 4.2)
+- [x] **Widget Component**
+  - [x] Create `DashboardWidget` wrapper component
+  - [x] Implement "Edit Mode" toggle (only allow dragging/resizing in edit mode)
+  - [x] Add "Remove" button to widget header
+  - [x] Add "Settings" button to configure widget (NATS subject)
+  - [x] Create a placeholder content for widgets (Real charts come in Story 4.2)
 
-- [ ] **Integration**
-  - [ ] Add `DashboardPage` to main routing
-  - [ ] Verify persistence by reloading page
+- [x] **Integration**
+  - [x] Add `DashboardPage` to main routing
+  - [x] Verify persistence by reloading page
 
 ## Dev Notes
 
@@ -74,7 +75,8 @@ viz/src/features/dashboard/
 ├── components/
 │   ├── DashboardLayout.tsx
 │   ├── DashboardWidget.tsx
-│   └── WidgetPlaceholder.tsx
+│   ├── WidgetPlaceholder.tsx
+│   └── WidgetConfigModal.tsx
 ├── stores/
 │   └── useDashboardStore.ts
 └── types/
@@ -95,12 +97,29 @@ viz/src/features/dashboard/
 Antigravity (Google Deepmind)
 
 ### Completion Notes List
-*   [ ] Confirmed `react-grid-layout` installation
-*   [ ] Verified persistence works
-*   [ ] Checked responsiveness on mobile breakpoint
+*   [x] Confirmed `react-grid-layout` installation
+*   [x] Verified persistence works
+*   [x] Checked responsiveness on mobile breakpoint
+*   [x] Added widget configuration modal for NATS subject
+*   [x] Fixed TypeScript type safety issues
+*   [x] Added browser compatibility for UUID generation
+
+### Code Review Fixes Applied
+*   Fixed TypeScript `any` type → proper `Layout` type
+*   Added crypto.randomUUID() fallback for older browsers
+*   Implemented widget configuration UI (AC #3)
+*   Added `updateWidget` action to store
+*   Created `WidgetConfigModal` component
 
 ### File List
 *   `viz/package.json`
+*   `viz/package-lock.json`
+*   `viz/src/App.tsx`
+*   `viz/src/main.tsx`
+*   `viz/src/features/dashboard/types/index.ts`
 *   `viz/src/features/dashboard/stores/useDashboardStore.ts`
 *   `viz/src/features/dashboard/components/DashboardLayout.tsx`
 *   `viz/src/features/dashboard/components/DashboardWidget.tsx`
+*   `viz/src/features/dashboard/components/WidgetPlaceholder.tsx`
+*   `viz/src/features/dashboard/components/WidgetConfigModal.tsx`
+*   `viz/src/pages/DashboardPage.tsx`

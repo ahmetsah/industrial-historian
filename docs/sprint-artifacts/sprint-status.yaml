@@ -61,14 +61,14 @@ development_status:
   3-3-grpc-query-api: done
   epic-3-retrospective: completed
 
-  epic-4: in-progress
-  4-1-real-time-dashboard-framework: ready-for-dev
-  4-2-trend-chart-component-uplot: backlog
-  4-3-data-export-service: backlog
-  epic-4-retrospective: optional
+  epic-4: done
+  4-1-real-time-dashboard-framework: done
+  4-2-trend-chart-component-uplot: done
+  4-3-data-export-service: done
+  epic-4-retrospective: completed
 
-  epic-5: backlog
-  5-1-immutable-audit-service-go: backlog
+  epic-5: in-progress
+  5-1-immutable-audit-service-go: ready-for-dev
   5-2-alarm-state-machine-isa-18-2: backlog
   epic-5-retrospective: optional
 

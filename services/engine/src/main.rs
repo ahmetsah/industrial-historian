@@ -1,4 +1,5 @@
 mod downsample;
+mod export;
 mod ingest;
 mod query;
 mod storage;
@@ -19,6 +20,9 @@ async fn main() -> Result<()> {
     let grpc_addr = std::env::var("GRPC_ADDR")
         .unwrap_or_else(|_| "0.0.0.0:50051".to_string())
         .parse()?;
+    let http_port = std::env::var("HTTP_PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()?;
 
     let client = ingest::connect_nats(&nats_url).await?;
     tracing::info!("Connected to NATS at {}", nats_url);
@@ -31,7 +35,7 @@ async fn main() -> Result<()> {
     tracing::info!("Starting gRPC server on {}", grpc_addr);
 
     tokio::select! {
-        res = ingest::start_ingestion(client, storage, &subject) => {
+        res = ingest::start_ingestion(client, storage.clone(), &subject) => {
             if let Err(e) = res {
                 tracing::error!("Ingestion failed: {}", e);
             }
@@ -43,6 +47,11 @@ async fn main() -> Result<()> {
                     tracing::error!("gRPC server failed: {}", e);
                 }
             }
+        res = export::start_server(storage.clone(), http_port) => {
+            if let Err(e) = res {
+                tracing::error!("Export server failed: {}", e);
+            }
+        }
         _ = tokio::signal::ctrl_c() => {
             tracing::info!("Shutting down Engine Service");
         }

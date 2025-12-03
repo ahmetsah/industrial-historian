@@ -1,0 +1,31 @@
+[modbus]
+ip = "172.29.80.1"   # Windows IP adresiniz
+port = 5020
+unit_id = 1
+poll_interval_ms = 1000
+
+[[modbus.registers]]
+address = 0
+name = "Temperature"
+data_type = "Int16"
+
+[[modbus.registers]]
+address = 2
+name = "Pressure"
+data_type = "Int16"
+
+[nats]
+url = "nats://172.29.80.1:4222"
+subject = "data.raw"
+
+[buffer]
+memory_capacity = 10000
+disk_path = "ops/data/ingestor_wal"
+
+[[calculated_tags]]
+name = "Delta_P"
+expression = "Pressure - 10"
+
+[[calculated_tags]]
+name = "Efficiency"
+expression = "(Temperature / Pressure) * 100"

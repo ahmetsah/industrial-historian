@@ -11,3 +11,11 @@ tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 anyhow.workspace = true
+config = "0.13"
+serde = { workspace = true, features = ["derive"] }
+tokio-modbus = "0.17"
+dotenvy = "0.15.7"
+async-nats = "0.34"
+bytes = "1.5"
+prost = "0.13"
+evalexpr = "11.3"

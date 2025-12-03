@@ -148,10 +148,7 @@ impl RocksDBStorage {
 #[async_trait::async_trait]
 impl StorageEngine for RocksDBStorage {
     fn write(&self, data: &SensorData) -> Result<()> {
-        let mut entry = self
-            .buffer
-            .entry(data.sensor_id.clone())
-            .or_default();
+        let mut entry = self.buffer.entry(data.sensor_id.clone()).or_default();
         entry.push((data.timestamp_ms, data.value));
 
         if entry.len() >= BUFFER_SIZE {

@@ -1,7 +1,38 @@
 #!/bin/sh
 set -e
 
-echo "Creating EVENTS stream..."
-nats stream add EVENTS --subjects "enterprise.>" --storage file --retention limits --max-msgs=-1 --max-bytes=-1 --max-age=1y --discard old --dupe-window=2m --replicas=1 --no-ack
+echo "Waiting for NATS server..."
+sleep 5
 
-echo "Stream EVENTS created."
+echo "Resetting EVENTS stream..."
+
+# 1. Varsa eski stream'i SİL (Hata verirse yoksay '|| true')
+# -f: Force (Soru sorma)
+nats stream delete EVENTS -f --server nats:4222 || true
+
+echo "Creating EVENTS stream config..."
+
+# 2. JSON Konfigürasyonu oluştur
+cat <<EOF > /tmp/events_stream.json
+{
+  "name": "EVENTS",
+  "subjects": ["enterprise.>"],
+  "retention": "limits",
+  "max_consumers": -1,
+  "max_msgs": -1,
+  "max_bytes": -1,
+  "max_age": 31536000000000000,
+  "storage": "file",
+  "discard": "old",
+  "num_replicas": 1,
+  "duplicate_window": 120000000000,
+  "no_ack": false
+}
+EOF
+
+echo "Applying configuration..."
+
+# 3. Yeni ayarlarla stream'i EKLE
+nats stream add --config /tmp/events_stream.json --server nats:4222
+
+echo "Stream EVENTS created successfully."

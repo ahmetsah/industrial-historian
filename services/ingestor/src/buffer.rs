@@ -12,6 +12,8 @@ pub struct RingBuffer<T> {
 }
 
 impl<T> RingBuffer<T> {
+    #[allow(dead_code)]
+
     pub fn new(capacity: usize) -> Self {
         Self {
             buffer: VecDeque::with_capacity(capacity),
@@ -32,10 +34,12 @@ impl<T> RingBuffer<T> {
         self.buffer.pop_front()
     }
 
+    #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.buffer.is_empty()
     }
 
+    #[allow(dead_code)]
     pub fn len(&self) -> usize {
         self.buffer.len()
     }

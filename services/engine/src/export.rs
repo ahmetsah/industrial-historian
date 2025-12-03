@@ -1,3 +1,4 @@
+use crate::storage::StorageEngine;
 use axum::{
     body::Body,
     extract::{Query, State},
@@ -8,7 +9,6 @@ use axum::{
 use futures::StreamExt;
 use serde::Deserialize;
 use std::sync::Arc;
-use crate::storage::StorageEngine;
 
 #[derive(Deserialize)]
 pub struct ExportQuery {
@@ -42,34 +42,40 @@ async fn export_handler(
                 match res {
                     Ok(point) => {
                         // Format: timestamp_ms,value,quality
-                        Ok::<_, std::io::Error>(format!("{},{},{}\n", point.timestamp_ms, point.value, point.quality))
+                        Ok::<_, std::io::Error>(format!(
+                            "{},{},{}\n",
+                            point.timestamp_ms, point.value, point.quality
+                        ))
                     }
                     Err(e) => {
                         tracing::error!("Error in stream: {}", e);
-                        Err(std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
+                        Err(std::io::Error::new(
+                            std::io::ErrorKind::Other,
+                            e.to_string(),
+                        ))
                     }
                 }
             });
-            
+
             // Add header
-            let header = futures::stream::once(async { Ok("timestamp_ms,value,quality\n".to_string()) });
+            let header =
+                futures::stream::once(async { Ok("timestamp_ms,value,quality\n".to_string()) });
             let body_stream = header.chain(csv_stream);
 
             // Convert to bytes stream
-            let byte_stream = body_stream.map(|res| {
-                res.map(|s| axum::body::Bytes::from(s))
-            });
+            let byte_stream = body_stream.map(|res| res.map(|s| axum::body::Bytes::from(s)));
 
             // Set headers for file download
             let headers = [
                 (axum::http::header::CONTENT_TYPE, "text/csv"),
-                (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"export.csv\""),
+                (
+                    axum::http::header::CONTENT_DISPOSITION,
+                    "attachment; filename=\"export.csv\"",
+                ),
             ];
 
             (headers, Body::from_stream(byte_stream)).into_response()
         }
-        Err(e) => {
-            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
-        }
+        Err(e) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
     }
 }

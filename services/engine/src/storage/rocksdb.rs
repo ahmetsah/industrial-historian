@@ -382,7 +382,9 @@ impl StorageEngine for RocksDBStorage {
                     let db_clone = db.clone();
                     let sensor_id_clone = sensor_id.clone();
                     let res = tokio::task::spawn_blocking(move || -> Result<Vec<String>> {
-                        let cf = db_clone.cf_handle("tiering_metadata").context("CF not found")?;
+                        let cf = db_clone
+                            .cf_handle("tiering_metadata")
+                            .context("CF not found")?;
                         let start_key = RocksDBStorage::generate_key(&sensor_id_clone, start_ts);
                         let iter = db_clone.iterator_cf(
                             &cf,
@@ -391,19 +393,27 @@ impl StorageEngine for RocksDBStorage {
                         let mut keys = Vec::new();
                         for item in iter {
                             let (k, v) = item?;
-                             if k.len() < 9 { continue; }
+                            if k.len() < 9 {
+                                continue;
+                            }
                             let ts_start = k.len() - 8;
                             let sensor_bytes = &k[0..ts_start - 1];
-                            let stored_sensor_id = String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
-                            if stored_sensor_id != sensor_id_clone { break; }
+                            let stored_sensor_id =
+                                String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
+                            if stored_sensor_id != sensor_id_clone {
+                                break;
+                            }
                             let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
                             let block_start_ts = i64::from_be_bytes(ts_bytes);
-                            if block_start_ts > end_ts { break; }
+                            if block_start_ts > end_ts {
+                                break;
+                            }
                             keys.push(String::from_utf8(v.to_vec())?);
                         }
                         Ok(keys)
-                    }).await;
-                    
+                    })
+                    .await;
+
                     if let Ok(Ok(keys)) = res {
                         s3_keys = keys;
                     }
@@ -411,20 +421,22 @@ impl StorageEngine for RocksDBStorage {
 
                 for s3_key in s3_keys {
                     if let Ok(data) = client.get_object(&s3_key).await {
-                         use crate::storage::compression::decompress_points;
-                         if let Ok(decompressed) = decompress_points(&data) {
-                             for (ts, val) in decompressed {
-                                 if ts >= start_ts && ts <= end_ts {
-                                     let point = SensorData {
-                                         sensor_id: sensor_id.clone(),
-                                         timestamp_ms: ts,
-                                         value: val,
-                                         quality: 1,
-                                     };
-                                     if tx.send(Ok(point)).await.is_err() { return; }
-                                 }
-                             }
-                         }
+                        use crate::storage::compression::decompress_points;
+                        if let Ok(decompressed) = decompress_points(&data) {
+                            for (ts, val) in decompressed {
+                                if ts >= start_ts && ts <= end_ts {
+                                    let point = SensorData {
+                                        sensor_id: sensor_id.clone(),
+                                        timestamp_ms: ts,
+                                        value: val,
+                                        quality: 1,
+                                    };
+                                    if tx.send(Ok(point)).await.is_err() {
+                                        return;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -434,42 +446,52 @@ impl StorageEngine for RocksDBStorage {
                 let db_clone = db.clone();
                 let sensor_id_clone = sensor_id.clone();
                 let tx_clone = tx.clone();
-                
+
                 let _ = tokio::task::spawn_blocking(move || {
                     let start_key = RocksDBStorage::generate_key(&sensor_id_clone, start_ts);
                     let iter = db_clone.iterator(rocksdb::IteratorMode::From(
                         &start_key,
                         rocksdb::Direction::Forward,
                     ));
-                    
+
                     for item in iter {
                         if let Ok((k, v)) = item {
-                             if k.len() < 9 { continue; }
-                             let ts_start = k.len() - 8;
-                             let sensor_bytes = &k[0..ts_start - 1];
-                             let stored_sensor_id = String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
-                             if stored_sensor_id != sensor_id_clone { break; }
-                             let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
-                             let block_start_ts = i64::from_be_bytes(ts_bytes);
-                             if block_start_ts > end_ts { break; }
-                             
-                             use crate::storage::compression::decompress_points;
-                             if let Ok(decompressed) = decompress_points(&v) {
-                                 for (ts, val) in decompressed {
-                                     if ts >= start_ts && ts <= end_ts {
-                                         let point = SensorData {
-                                             sensor_id: sensor_id_clone.clone(),
-                                             timestamp_ms: ts,
-                                             value: val,
-                                             quality: 1,
-                                         };
-                                         if tx_clone.blocking_send(Ok(point)).is_err() { return; }
-                                     }
-                                 }
-                             }
+                            if k.len() < 9 {
+                                continue;
+                            }
+                            let ts_start = k.len() - 8;
+                            let sensor_bytes = &k[0..ts_start - 1];
+                            let stored_sensor_id =
+                                String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
+                            if stored_sensor_id != sensor_id_clone {
+                                break;
+                            }
+                            let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
+                            let block_start_ts = i64::from_be_bytes(ts_bytes);
+                            if block_start_ts > end_ts {
+                                break;
+                            }
+
+                            use crate::storage::compression::decompress_points;
+                            if let Ok(decompressed) = decompress_points(&v) {
+                                for (ts, val) in decompressed {
+                                    if ts >= start_ts && ts <= end_ts {
+                                        let point = SensorData {
+                                            sensor_id: sensor_id_clone.clone(),
+                                            timestamp_ms: ts,
+                                            value: val,
+                                            quality: 1,
+                                        };
+                                        if tx_clone.blocking_send(Ok(point)).is_err() {
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-                }).await;
+                })
+                .await;
             }
 
             // 3. Buffer
@@ -482,7 +504,9 @@ impl StorageEngine for RocksDBStorage {
                             value: *val,
                             quality: 1,
                         };
-                        if tx.send(Ok(point)).await.is_err() { return; }
+                        if tx.send(Ok(point)).await.is_err() {
+                            return;
+                        }
                     }
                 }
             }

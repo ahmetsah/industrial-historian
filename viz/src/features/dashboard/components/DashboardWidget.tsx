@@ -32,23 +32,26 @@ export const DashboardWidget = React.forwardRef<HTMLDivElement, DashboardWidgetP
                     onMouseUp={onMouseUp}
                     onTouchEnd={onTouchEnd}
                     className={twMerge(
-                        'bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden',
+                        'bg-slate-900 border border-white/5 rounded-xl shadow-xl shadow-black/20 flex flex-col overflow-hidden backdrop-blur-sm transition-shadow hover:shadow-2xl hover:border-white/10 group',
                         className
                     )}
                     {...props}
                 >
-                    <div className="flex-none flex items-center justify-between p-2 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 cursor-move draggable-handle">
-                        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate select-none">
-                            {widget.title}
-                        </h3>
-                        <div className="flex items-center gap-1">
+                    <div className="flex-none flex items-center justify-between px-4 py-3 border-b border-white/5 bg-slate-900/50 cursor-move draggable-handle group-hover:bg-slate-800/50 transition-colors">
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-industrial-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]"></div>
+                            <h3 className="text-sm font-medium text-slate-200 tracking-wide truncate select-none">
+                                {widget.title}
+                            </h3>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsConfigOpen(true);
                                 }}
                                 onMouseDown={(e) => e.stopPropagation()}
-                                className="p-1 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors cursor-pointer"
+                                className="p-1.5 text-slate-400 hover:text-industrial-400 hover:bg-white/5 rounded-lg transition-all cursor-pointer"
                                 title="Configure widget"
                             >
                                 <Settings size={14} />
@@ -60,7 +63,7 @@ export const DashboardWidget = React.forwardRef<HTMLDivElement, DashboardWidgetP
                                         removeWidget(widget.id);
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
-                                    className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors cursor-pointer"
+                                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer"
                                     title="Remove widget"
                                 >
                                     <X size={14} />

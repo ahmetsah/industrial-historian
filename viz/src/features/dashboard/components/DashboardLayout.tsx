@@ -30,7 +30,7 @@ export const DashboardLayout: React.FC = () => {
     };
 
     return (
-        <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-900 p-4">
+        <div className="w-full min-h-screen p-6">
             <ResponsiveGridLayout
                 className="layout"
                 layouts={layouts}

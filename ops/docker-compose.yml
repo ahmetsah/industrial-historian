@@ -161,6 +161,16 @@ services:
       - historian-net
     restart: always
 
+  viz:
+    build:
+      context: ../viz
+      dockerfile: Dockerfile
+    container_name: ops-viz
+    ports:
+      - "3000:80"
+    networks:
+      - historian-net
+
 volumes:
   nats_data:
   minio_data:

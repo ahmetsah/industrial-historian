@@ -7,24 +7,29 @@ export const DashboardPage: React.FC = () => {
     const { isEditMode, toggleEditMode, addWidget } = useDashboardStore();
 
     return (
-        <div className="flex flex-col h-screen">
-            <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex items-center justify-between shadow-sm z-10 relative">
-                <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                    Industrial Historian Dashboard
-                </h1>
-                <div className="flex items-center gap-2">
+        <div className="flex flex-col h-screen bg-slate-950 text-slate-50 font-sans">
+            <header className="flex items-center justify-between px-6 py-4 bg-slate-900/50 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-industrial-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-industrial-500/20">
+                        <div className="w-3 h-3 bg-white rounded-full"></div>
+                    </div>
+                    <h1 className="text-xl font-bold tracking-tight text-white">
+                        Semper<span className="text-industrial-400">Historian</span>
+                    </h1>
+                </div>
+                <div className="flex items-center gap-3">
                     <button
-                        onClick={() => addWidget('chart', 'New Chart')}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                        onClick={() => addWidget('chart', 'New Metric')}
+                        className="flex items-center gap-2 px-4 py-2 bg-industrial-600 hover:bg-industrial-500 text-white rounded-lg transition-all shadow-lg shadow-industrial-900/40 border border-white/10 hover:border-white/20 text-sm font-medium active:scale-95"
                     >
                         <Plus size={16} />
                         Add Widget
                     </button>
                     <button
                         onClick={toggleEditMode}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${isEditMode
-                                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium border active:scale-95 ${isEditMode
+                                ? 'bg-green-500/10 text-green-400 border-green-500/50 hover:bg-green-500/20'
+                                : 'bg-slate-800 text-slate-300 border-white/5 hover:bg-slate-700 hover:text-white'
                             }`}
                     >
                         {isEditMode ? <Check size={16} /> : <Edit2 size={16} />}
@@ -32,7 +37,7 @@ export const DashboardPage: React.FC = () => {
                     </button>
                 </div>
             </header>
-            <main className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900">
+            <main className="flex-1 overflow-auto bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
                 <DashboardLayout />
             </main>
         </div>

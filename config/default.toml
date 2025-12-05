@@ -2,7 +2,7 @@
 ip = "172.29.80.1"   # Windows IP adresiniz
 port = 5020
 unit_id = 1
-poll_interval_ms = 1000
+poll_interval_ms = 3000
 
 [[modbus.registers]]
 address = 0

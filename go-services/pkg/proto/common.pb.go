@@ -4,7 +4,7 @@
 // 	protoc        v4.25.1
 // source: common.proto
 
-package v1
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -225,6 +225,90 @@ func (x *UserAction) GetTimestampMs() int64 {
 	return 0
 }
 
+type AlarmEvent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AlarmId       int32                  `protobuf:"varint,1,opt,name=alarm_id,json=alarmId,proto3" json:"alarm_id,omitempty"`
+	DefinitionId  int32                  `protobuf:"varint,2,opt,name=definition_id,json=definitionId,proto3" json:"definition_id,omitempty"`
+	State         string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
+	Value         float64                `protobuf:"fixed64,4,opt,name=value,proto3" json:"value,omitempty"`
+	TimestampMs   int64                  `protobuf:"varint,5,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
+	Message       string                 `protobuf:"bytes,6,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AlarmEvent) Reset() {
+	*x = AlarmEvent{}
+	mi := &file_common_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AlarmEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AlarmEvent) ProtoMessage() {}
+
+func (x *AlarmEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_common_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AlarmEvent.ProtoReflect.Descriptor instead.
+func (*AlarmEvent) Descriptor() ([]byte, []int) {
+	return file_common_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *AlarmEvent) GetAlarmId() int32 {
+	if x != nil {
+		return x.AlarmId
+	}
+	return 0
+}
+
+func (x *AlarmEvent) GetDefinitionId() int32 {
+	if x != nil {
+		return x.DefinitionId
+	}
+	return 0
+}
+
+func (x *AlarmEvent) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *AlarmEvent) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *AlarmEvent) GetTimestampMs() int64 {
+	if x != nil {
+		return x.TimestampMs
+	}
+	return 0
+}
+
+func (x *AlarmEvent) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_common_proto protoreflect.FileDescriptor
 
 const file_common_proto_rawDesc = "" +
@@ -246,7 +330,15 @@ const file_common_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x16\n" +
 	"\x06action\x18\x02 \x01(\tR\x06action\x12\x1a\n" +
 	"\bresource\x18\x03 \x01(\tR\bresource\x12!\n" +
-	"\ftimestamp_ms\x18\x04 \x01(\x03R\vtimestampMsBDZBgithub.com/ahmet/historian/go-services/internal/proto/historian/v1b\x06proto3"
+	"\ftimestamp_ms\x18\x04 \x01(\x03R\vtimestampMs\"\xb5\x01\n" +
+	"\n" +
+	"AlarmEvent\x12\x19\n" +
+	"\balarm_id\x18\x01 \x01(\x05R\aalarmId\x12#\n" +
+	"\rdefinition_id\x18\x02 \x01(\x05R\fdefinitionId\x12\x14\n" +
+	"\x05state\x18\x03 \x01(\tR\x05state\x12\x14\n" +
+	"\x05value\x18\x04 \x01(\x01R\x05value\x12!\n" +
+	"\ftimestamp_ms\x18\x05 \x01(\x03R\vtimestampMs\x12\x18\n" +
+	"\amessage\x18\x06 \x01(\tR\amessageB@Z>github.com/ahmetsah/industrial-historian/go-services/pkg/protob\x06proto3"
 
 var (
 	file_common_proto_rawDescOnce sync.Once
@@ -260,11 +352,12 @@ func file_common_proto_rawDescGZIP() []byte {
 	return file_common_proto_rawDescData
 }
 
-var file_common_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_common_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_common_proto_goTypes = []any{
 	(*SensorData)(nil), // 0: historian.v1.SensorData
 	(*LogEntry)(nil),   // 1: historian.v1.LogEntry
 	(*UserAction)(nil), // 2: historian.v1.UserAction
+	(*AlarmEvent)(nil), // 3: historian.v1.AlarmEvent
 }
 var file_common_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -285,7 +378,7 @@ func file_common_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_common_proto_rawDesc), len(file_common_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

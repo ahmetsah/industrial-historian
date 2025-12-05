@@ -454,37 +454,35 @@ impl StorageEngine for RocksDBStorage {
                         rocksdb::Direction::Forward,
                     ));
 
-                    for item in iter {
-                        if let Ok((k, v)) = item {
-                            if k.len() < 9 {
-                                continue;
-                            }
-                            let ts_start = k.len() - 8;
-                            let sensor_bytes = &k[0..ts_start - 1];
-                            let stored_sensor_id =
-                                String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
-                            if stored_sensor_id != sensor_id_clone {
-                                break;
-                            }
-                            let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
-                            let block_start_ts = i64::from_be_bytes(ts_bytes);
-                            if block_start_ts > end_ts {
-                                break;
-                            }
+                    for (k, v) in iter.flatten() {
+                        if k.len() < 9 {
+                            continue;
+                        }
+                        let ts_start = k.len() - 8;
+                        let sensor_bytes = &k[0..ts_start - 1];
+                        let stored_sensor_id =
+                            String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
+                        if stored_sensor_id != sensor_id_clone {
+                            break;
+                        }
+                        let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
+                        let block_start_ts = i64::from_be_bytes(ts_bytes);
+                        if block_start_ts > end_ts {
+                            break;
+                        }
 
-                            use crate::storage::compression::decompress_points;
-                            if let Ok(decompressed) = decompress_points(&v) {
-                                for (ts, val) in decompressed {
-                                    if ts >= start_ts && ts <= end_ts {
-                                        let point = SensorData {
-                                            sensor_id: sensor_id_clone.clone(),
-                                            timestamp_ms: ts,
-                                            value: val,
-                                            quality: 1,
-                                        };
-                                        if tx_clone.blocking_send(Ok(point)).is_err() {
-                                            return;
-                                        }
+                        use crate::storage::compression::decompress_points;
+                        if let Ok(decompressed) = decompress_points(&v) {
+                            for (ts, val) in decompressed {
+                                if ts >= start_ts && ts <= end_ts {
+                                    let point = SensorData {
+                                        sensor_id: sensor_id_clone.clone(),
+                                        timestamp_ms: ts,
+                                        value: val,
+                                        quality: 1,
+                                    };
+                                    if tx_clone.blocking_send(Ok(point)).is_err() {
+                                        return;
                                     }
                                 }
                             }

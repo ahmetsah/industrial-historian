@@ -23,7 +23,7 @@ export const useTrendData = ({
 
     // Initialize Data
     useEffect(() => {
-        let startTime = Date.now() / 1000;
+        const startTime = Date.now() / 1000;
         const times: number[] = [];
         const values: number[] = [];
 

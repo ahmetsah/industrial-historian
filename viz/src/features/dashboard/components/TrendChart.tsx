@@ -32,6 +32,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ title, sensorId = "test-
             <div className="flex-1 min-h-0">
                 <UPlotWrapper
                     options={options}
+                    // eslint-disable-next-line react-hooks/refs
                     data={dataRef.current}
                     onCreate={registerChart}
                 />

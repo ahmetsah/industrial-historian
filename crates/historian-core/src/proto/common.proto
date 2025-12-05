@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package historian.v1;
 
-option go_package = "github.com/ahmet/historian/go-services/pkg/proto/historian/v1";
+option go_package = "github.com/ahmetsah/industrial-historian/go-services/pkg/proto";
 
 message SensorData {
   string sensor_id = 1;
@@ -23,4 +23,13 @@ message UserAction {
   string action = 2;
   string resource = 3;
   int64 timestamp_ms = 4;
+}
+
+message AlarmEvent {
+  int32 alarm_id = 1;
+  int32 definition_id = 2;
+  string state = 3;
+  double value = 4;
+  int64 timestamp_ms = 5;
+  string message = 6;
 }

@@ -1,5 +1,3 @@
-
-
 services:
   nats:
     image: nats:latest
@@ -10,6 +8,8 @@ services:
     volumes:
       - ./nats.conf:/etc/nats/nats.conf:ro
       - nats_data:/data/jetstream
+    networks:
+      - historian-net
 
   nats-setup:
     image: natsio/nats-box
@@ -20,6 +20,8 @@ services:
     command: /bin/sh -c "sleep 5; chmod +x /setup_streams.sh && /setup_streams.sh"
     environment:
       NATS_URL: nats://nats:4222
+    networks:
+      - historian-net
 
   minio:
     image: minio/minio
@@ -32,6 +34,8 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    networks:
+      - historian-net
 
   postgres:
     image: postgres:16-alpine
@@ -43,6 +47,8 @@ services:
       POSTGRES_DB: historian
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - historian-net
 
   pgadmin:
     image: dpage/pgadmin4
@@ -57,11 +63,112 @@ services:
     networks:
       - historian-net
 
+  audit:
+    build:
+      context: ../go-services
+      dockerfile: audit/Dockerfile
+    container_name: ops-audit
+    environment:
+      DB_URL: postgres://postgres:postgres@postgres:5432/historian?sslmode=disable
+      NATS_URL: nats://nats:4222
+      PORT: "8082"
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - nats
+    networks:
+      - historian-net
+
+  auth:
+    build:
+      context: ../go-services/auth
+      dockerfile: Dockerfile
+    container_name: ops-auth
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/historian?sslmode=disable
+      NATS_URL: nats://nats:4222
+      PORT: "8080"
+      PRIVATE_KEY_PATH: /app/private.pem
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../go-services/auth/private.pem:/app/private.pem:ro
+    depends_on:
+      - postgres
+      - nats
+    networks:
+      - historian-net
+
+  alarm:
+    build:
+      context: ../go-services
+      dockerfile: alarm/Dockerfile
+    container_name: ops-alarm
+    environment:
+      DB_URL: postgres://postgres:postgres@postgres:5432/historian?sslmode=disable
+      NATS_URL: nats://nats:4222
+      PORT: "8083"
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres
+      - nats
+    networks:
+      - historian-net
+
+  ingestor:
+    build:
+      context: ..
+      dockerfile: services/ingestor/Dockerfile
+    container_name: ops-ingestor
+    environment:
+      RUST_LOG: info
+      NATS_URL: nats://nats:4222
+    volumes:
+      - ../config/default.toml:/app/config/default.toml:ro
+      - ingestor_buffer:/app/ops/data/ingestor_wal
+    depends_on:
+      - nats
+    networks:
+      - historian-net
+    restart: always
+    # Use host network to access Modbus device on host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  engine:
+    build:
+      context: ..
+      dockerfile: services/engine/Dockerfile
+    container_name: ops-engine
+    environment:
+      RUST_LOG: info
+      NATS_URL: nats://nats:4222
+      NATS_SUBJECT: data.raw
+      DB_PATH: /data/rocksdb
+      GRPC_ADDR: 0.0.0.0:50051
+      HTTP_PORT: 8081
+    ports:
+      - "50051:50051" # gRPC Query API
+      - "8081:8081" # HTTP Export API
+    volumes:
+      - engine_data:/data
+    depends_on:
+      - nats
+      - ingestor
+    networks:
+      - historian-net
+    restart: always
+
 volumes:
   nats_data:
   minio_data:
   pg_data:
+  ingestor_buffer:
+  engine_data:
+
 
 networks:
   historian-net:
-    driver: bridge  
+    driver: bridge

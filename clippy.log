@@ -1,0 +1,94 @@
+    Checking engine v0.1.0 (/home/ahmet/historian/services/engine)
+error: this can be `std::io::Error::other(_)`
+  --> services/engine/src/export.rs:52:29
+   |
+52 |                           Err(std::io::Error::new(
+   |  _____________________________^
+53 | |                             std::io::ErrorKind::Other,
+54 | |                             e.to_string(),
+55 | |                         ))
+   | |_________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#io_other_error
+   = note: `-D clippy::io-other-error` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::io_other_error)]`
+help: use `std::io::Error::other`
+   |
+52 ~                         Err(std::io::Error::other(
+53 ~                             e.to_string(),
+   |
+
+error: redundant closure
+  --> services/engine/src/export.rs:66:61
+   |
+66 |             let byte_stream = body_stream.map(|res| res.map(|s| axum::body::Bytes::from(s)));
+   |                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the associated function itself: `axum::body::Bytes::from`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#redundant_closure
+   = note: `-D clippy::redundant-closure` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::redundant_closure)]`
+
+error: unnecessary `if let` since only the `Ok` variant of the iterator element is used
+   --> services/engine/src/storage/rocksdb.rs:457:21
+    |
+457 | /                     for item in iter {
+458 | |                         if let Ok((k, v)) = item {
+459 | |                             if k.len() < 9 {
+460 | |                                 continue;
+...   |
+492 | |                     }
+    | |_____________________^
+    |
+help: try `.flatten()` and remove the `if let` statement in the for loop
+   --> services/engine/src/storage/rocksdb.rs:458:25
+    |
+458 | /                         if let Ok((k, v)) = item {
+459 | |                             if k.len() < 9 {
+460 | |                                 continue;
+...   |
+491 | |                         }
+    | |_________________________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.91.0/index.html#manual_flatten
+    = note: `-D clippy::manual-flatten` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_flatten)]`
+help: try
+    |
+457 ~                     for (k, v) in iter.flatten() {
+458 +                         if k.len() < 9 {
+459 +                             continue;
+460 +                         }
+461 +                         let ts_start = k.len() - 8;
+462 +                         let sensor_bytes = &k[0..ts_start - 1];
+463 +                         let stored_sensor_id =
+464 +                             String::from_utf8(sensor_bytes.to_vec()).unwrap_or_default();
+465 +                         if stored_sensor_id != sensor_id_clone {
+466 +                             break;
+467 +                         }
+468 +                         let ts_bytes: [u8; 8] = k[ts_start..].try_into().unwrap();
+469 +                         let block_start_ts = i64::from_be_bytes(ts_bytes);
+470 +                         if block_start_ts > end_ts {
+471 +                             break;
+472 +                         }
+473 + 
+474 +                         use crate::storage::compression::decompress_points;
+475 +                         if let Ok(decompressed) = decompress_points(&v) {
+476 +                             for (ts, val) in decompressed {
+477 +                                 if ts >= start_ts && ts <= end_ts {
+478 +                                     let point = SensorData {
+479 +                                         sensor_id: sensor_id_clone.clone(),
+480 +                                         timestamp_ms: ts,
+481 +                                         value: val,
+482 +                                         quality: 1,
+483 +                                     };
+484 +                                     if tx_clone.blocking_send(Ok(point)).is_err() {
+485 +                                         return;
+486 +                                     }
+487 +                                 }
+488 +                             }
+489 +                         }
+490 +                     }
+    |
+
+error: could not compile `engine` (bin "engine") due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `engine` (bin "engine" test) due to 3 previous errors

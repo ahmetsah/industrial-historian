@@ -68,8 +68,8 @@ development_status:
   epic-4-retrospective: completed
 
   epic-5: in-progress
-  5-1-immutable-audit-service-go: ready-for-dev
-  5-2-alarm-state-machine-isa-18-2: backlog
+  5-1-immutable-audit-service-go: review
+  5-2-alarm-state-machine-isa-18-2: review
   epic-5-retrospective: optional
 
   epic-6: backlog

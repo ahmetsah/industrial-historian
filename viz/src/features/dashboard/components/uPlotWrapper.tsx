@@ -45,7 +45,8 @@ export const UPlotWrapper: React.FC<UPlotWrapperProps> = ({
                 chartRef.current = null;
             }
         };
-    }, [options]); // Re-create chart only if options change. Data updates should be handled manually via chart instance.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [options, onCreate, onDelete]); // Re-create chart only if options change. Data updates should be handled manually via chart instance.
 
     // Handle resizing
     useEffect(() => {

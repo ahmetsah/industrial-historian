@@ -2,7 +2,7 @@
 ip = "172.29.80.1"   # Windows IP adresiniz
 port = 5020
 unit_id = 1
-poll_interval_ms = 1
+poll_interval_ms = 1000
 
 [[modbus.registers]]
 address = 0
@@ -60,7 +60,7 @@ subject = "data.raw"
 
 [buffer]
 memory_capacity = 10000
-disk_path = "ops/data/ingestor_wal"
+disk_path = "ops/data/ingestor_wal/buffer.wal"
 
 [[calculations]]
 name = "Delta_P"

@@ -49,10 +49,7 @@ async fn export_handler(
                     }
                     Err(e) => {
                         tracing::error!("Error in stream: {}", e);
-                        Err(std::io::Error::new(
-                            std::io::ErrorKind::Other,
-                            e.to_string(),
-                        ))
+                        Err(std::io::Error::other(e.to_string()))
                     }
                 }
             });
@@ -63,7 +60,7 @@ async fn export_handler(
             let body_stream = header.chain(csv_stream);
 
             // Convert to bytes stream
-            let byte_stream = body_stream.map(|res| res.map(|s| axum::body::Bytes::from(s)));
+            let byte_stream = body_stream.map(|res| res.map(axum::body::Bytes::from));
 
             // Set headers for file download
             let headers = [

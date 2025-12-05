@@ -14,10 +14,13 @@ func NewSHA256Hasher() *SHA256Hasher {
 }
 
 func (h *SHA256Hasher) Hash(prevHash string, log *LogEntry) string {
+	// Truncate to Microsecond to match Postgres storage precision
+	ts := log.Timestamp.Truncate(time.Microsecond)
+
 	// Format: prevHash + timestamp(RFC3339Nano) + actor + action + details
 	data := fmt.Sprintf("%s%s%s%s%s",
 		prevHash,
-		log.Timestamp.Format(time.RFC3339Nano),
+		ts.Format(time.RFC3339Nano),
 		log.Actor,
 		log.Action,
 		string(log.Details),

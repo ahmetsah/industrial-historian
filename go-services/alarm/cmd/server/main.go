@@ -69,11 +69,15 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to load definitions: %w", err)
 	}
 
-	// Start NATS Consumer
-	if err := natsTransport.Start(); err != nil {
-		return fmt.Errorf("failed to start NATS consumer: %w", err)
-	}
+	// Start Service Background Tasks (Unshelving)
+	svc.StartBackgroundTasks()
 
+	// Start NATS Consumer
+	go func() {
+		if err := natsTransport.Start(); err != nil {
+			log.Fatalf("Failed to start NATS consumer: %v", err)
+		}
+	}()
 	// Initialize HTTP Handler
 	httpHandler := transport.NewHttpHandler(svc)
 	mux := http.NewServeMux()

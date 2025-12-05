@@ -1,6 +1,6 @@
 # Story 5.2: Alarm State Machine (ISA 18.2)
 
-Status: Ready for Review
+Status: Done
 
 ## Story
 
@@ -107,6 +107,10 @@ Antigravity (Google Deepmind)
 - Implemented HTTP API for Acknowledge, Shelve, List Active, and Create Definition
 - Added unit tests for FSM, Evaluator, and Service logic
 - Verified all acceptance criteria
+- **Fix (AI Review):** Added `StartBackgroundTasks` and `checkShelvedAlarms` ticker to automatically unshelve expired alarms.
+- **Fix (AI Review):** Optimized `ProcessValue` locking and error aggregation.
+- **Fix (AI Review):** Fixed race condition in `LoadDefinitions` by holding lock during map replacement.
+
 
 ### File List
 - go-services/alarm/go.mod

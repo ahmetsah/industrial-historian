@@ -1,6 +1,6 @@
 # Story 5.1: Immutable Audit Service (Go)
 
-Status: Ready for Review
+Status: Done
 
 ## Story
 
@@ -124,3 +124,6 @@ Antigravity (Google Deepmind)
 *   Added NATS consumer for `sys.audit.>` and `sys.auth.login`.
 *   Added HTTP verification endpoint.
 *   Added Postgres repository with Serializable isolation.
+*   **Fix (AI Review):** Fixed timestamp precision mismatch (Microsecond truncation) to ensure hash verification passes.
+*   **Fix (AI Review):** Added retry logic for `40001` serialization failures to handle concurrent writes.
+*   **Fix (AI Review):** Added `LIMIT 1000` to `IterateLogs` to prevent potential DoS.

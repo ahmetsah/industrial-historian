@@ -10,6 +10,9 @@ build-go:
 build-viz:
 	cd viz && npm run build
 
+build-sim:
+	docker build -t ops-sim services/sim
+
 dev-up:
 	docker compose -f ops/docker-compose.yml up -d
 

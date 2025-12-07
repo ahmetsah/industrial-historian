@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package historian.v1;
+
+option go_package = "github.com/ahmetsah/industrial-historian/go-services/pkg/proto";
+
+message AnomalyEvent {
+  string source_tag = 1;
+  double actual = 2;
+  double predicted = 3;
+  double residual = 4;
+  int64 timestamp_ms = 5;
+  string severity = 6;
+}

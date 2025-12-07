@@ -4,6 +4,9 @@ members = [
     "crates/*",
     "services/*",
 ]
+exclude = [
+    "services/sim",
+]
 
 [workspace.package]
 version = "0.1.0"

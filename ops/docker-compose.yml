@@ -161,6 +161,20 @@ services:
       - historian-net
     restart: always
 
+  sim:
+    build:
+      context: ../services/sim
+      dockerfile: Dockerfile
+    container_name: ops-sim
+    environment:
+      NATS_URL: nats://nats:4222
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - nats
+    networks:
+      - historian-net
+    restart: always
+
   viz:
     build:
       context: ../viz

@@ -19,3 +19,4 @@ async-nats = "0.34"
 bytes = "1.5"
 prost = "0.13"
 evalexpr = "11.3"
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }

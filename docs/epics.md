@@ -97,13 +97,14 @@ This document provides the complete epic and story breakdown for historian, deco
     *   **Data:** `data/tsdb/` directory.
 
 ### Epic 4: Real-Time Visualization (Viz)
-*   **Goal:** Provide a responsive, modern interface for monitoring and analysis.
-*   **User Value:** Operators and Engineers can visualize trends and make decisions.
-*   **PRD Coverage:** FR-VIS-01 (Trend Analysis), FR-VIS-02 (Export), FR-VIS-03 (Confidence Interval).
+*   **Goal:** Build a "McMaster-Carr" style, zero-latency visualization engine for industrial data.
+*   **User Value:** Engineers can find specific sensors and visualize problems in < 10 seconds.
+*   **PRD Coverage:** FR-01 (Faceted Search), FR-04 (Prefetch), FR-06 (Deep Zoom), NFR-05 (Boring UI).
 *   **Technical Context:**
     *   **App:** `viz` (React + Vite).
-    *   **Tech:** `uPlot` for charts, `Zustand` for state.
-    *   **Pattern:** WebSocket connection to NATS (via Gateway) for live data.
+    *   **Style:** "Boring UI" (High contrast, density, system fonts).
+    *   **Tech:** `uPlot` for charts, `Zustand` for state, `tanstack-query` for data fetching.
+    *   **Pattern:** Faceted Search logic, Predictive Prefetching on hover.
 
 ### Epic 5: Compliance & Safety (Audit & Alarm)
 *   **Goal:** Satisfy critical industrial regulations for safety and data integrity.
@@ -393,65 +394,62 @@ This document provides the complete epic and story breakdown for historian, deco
 **Acceptance Criteria:**
 *   **Given** a gRPC request for `Sensor X` from `T1` to `T2`
 *   **When** the Engine processes the request
-*   **Then** it performs automatic downsampling (LTTB algorithm) if the point count > 1000
-*   **And** returns the data stream in < 100ms
+*   **Then** it performs automatic downsampling (LTTB algorithm)## Epic 4: Real-Time Visualization (Viz)
 
-**Technical Notes:**
-*   Define `service HistorianQuery` in Protobuf.
-*   Implement LTTB (Largest-Triangle-Three-Buckets) for visual downsampling.
+**Goal:** Build a "McMaster-Carr" style, zero-latency visualization engine for industrial data. The focus is on friction-free navigation and instant data access.
 
----
+### Story 4.1: Faceted Search & Navigation Layout
 
-## Epic 4: Real-Time Visualization (Viz)
-
-**Goal:** Provide a responsive, modern interface for monitoring and analysis.
-
-### Story 4.1: Real-time Dashboard Framework
-
-**As a** Operator,
-**I want** a customizable dashboard,
-**So that** I can arrange charts relevant to my machine.
+**As a** Maintenance Engineer,
+**I want** to filter sensors by Factory > Line > Machine > Type,
+**So that** I can find the specific sensor I need in seconds without typing.
 
 **Acceptance Criteria:**
-*   **Given** the React application
-*   **When** I drag and drop a "Chart Widget"
-*   **Then** I can configure it to listen to a specific NATS subject
-*   **And** the layout is saved to local storage
+*   **Given** a sidebar with facet categories (Factory, Line, Machine, Type)
+*   **When** I select a facet (e.g., "Line 1")
+*   **Then** the sensor list updates in < 100ms (FR-02)
+*   **And** the result count for other facets is updated
+*   **And** the list displays Tag ID, Unit, Scan Rate, and Data Type for each sensor (FR-03)
+*   **And** I can navigate the list using J/K keys (NFR-06)
 
 **Technical Notes:**
-*   Use `react-grid-layout`.
-*   Use `Zustand` for managing the layout state.
+*   Implement "Boring UI" aesthetic (NFR-05).
+*   Mock backend facet counts if API is not ready.
+*   Use `tanstack-table` or virtual scrolling for the list.
 
-### Story 4.2: Trend Chart Component (uPlot)
+### Story 4.2: High-Performance Visualization (Sparklines & Deep Zoom)
 
-**As a** Engineer,
-**I want** high-performance charts,
-**So that** I can zoom into millisecond-level data without the browser freezing.
+**As a** Process Engineer,
+**I want** to see data immediately when I look at a sensor,
+**So that** I don't have to wait for separate pages to load.
 
 **Acceptance Criteria:**
-*   **Given** a chart displaying 100,000 points
-*   **When** I zoom or pan
-*   **Then** the interaction is smooth (60 FPS)
-*   **And** new real-time points append to the right side instantly
+*   **Given** the sensor list
+*   **When** I hover over a sensor row
+*   **Then** a "sparkline" (mini chart) of the last 1 hour appears instantly (FR-04, FR-05)
+*   **When** I click a sensor
+*   **Then** the Main Chart renders the last 24 hours
+*   **And** I can zoom in with the mouse wheel without data loss (Deep Zoom) (FR-06)
+*   **And** TTI (Time to Interactive) is < 300ms (NFR-01)
 
 **Technical Notes:**
-*   Wrap `uPlot` in a React component.
-*   Ensure memory management (destroy chart instances on unmount).
+*   Use `uPlot` for both Sparklines and Main Chart.
+*   Implement predictive prefetching strategy.
 
 ### Story 4.3: Data Export Service
 
 **As a** Analyst,
-**I want** to export data to Excel,
-**So that** I can perform offline analysis.
+**I want** to export the currently viewed data,
+**So that** I can share it with colleagues or analyze in Excel.
 
 **Acceptance Criteria:**
-*   **Given** a selected time range on a chart
-*   **When** I click "Export CSV"
-*   **Then** the browser downloads a file containing the raw data
-*   **And** the generation takes < 5 seconds for 1M rows
+*   **Given** a selected data range on the main chart
+*   **When** I click "Export CSV" or "Export JSON"
+*   **Then** the browser downloads the file with the raw data types preserved (FR-07)
+*   **And** the filenames include the Tag ID and timestamp range
 
 **Technical Notes:**
-*   Stream data from gRPC directly to a browser stream if possible, or generate on backend.
+*   Ensure float precision is maintained.
 
 ---
 

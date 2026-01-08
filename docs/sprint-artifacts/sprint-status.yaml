@@ -61,11 +61,11 @@ development_status:
   3-3-grpc-query-api: done
   epic-3-retrospective: completed
 
-  epic-4: done
-  4-1-real-time-dashboard-framework: done
-  4-2-trend-chart-component-uplot: done
-  4-3-data-export-service: done
-  epic-4-retrospective: completed
+  epic-4: contexted
+  4-1-faceted-search-navigation: done
+  4-2-high-performance-visualization: review
+  4-3-data-export-service: ready-for-dev
+  epic-4-retrospective: optional
 
   epic-5: done
   5-1-immutable-audit-service-go: done

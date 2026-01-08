@@ -197,7 +197,7 @@ def main():
     # Query Postgres directly via docker exec
     # We look for action 'alarm_AckActive' which corresponds to the Acknowledge step
     cmd = [
-        "docker", "exec", "ops-postgres-1",
+        "docker", "exec", "ops-postgres",
         "psql", "-U", "postgres", "-d", "historian",
         "-t", "-c", "SELECT count(*) FROM audit_logs WHERE action = 'alarm_AckActive';"
     ]
@@ -212,7 +212,7 @@ def main():
                 print("❌ Audit Log Verification Failed: No 'alarm_AckActive' entries found.")
                 # Debug: Show all logs
                 debug_cmd = [
-                    "docker", "exec", "ops-postgres-1",
+                    "docker", "exec", "ops-postgres",
                     "psql", "-U", "postgres", "-d", "historian",
                     "-c", "SELECT id, action, timestamp FROM audit_logs ORDER BY timestamp DESC LIMIT 5;"
                 ]

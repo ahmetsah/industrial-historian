@@ -17,17 +17,10 @@ pub struct ExportQuery {
     end_ts: i64,
 }
 
-pub async fn start_server(storage: Arc<dyn StorageEngine>, port: u16) -> anyhow::Result<()> {
-    let app = Router::new()
+pub fn router(storage: Arc<dyn StorageEngine>) -> Router {
+    Router::new()
         .route("/api/v1/export", get(export_handler))
         .with_state(storage)
-        .layer(tower_http::cors::CorsLayer::permissive());
-
-    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
-    tracing::info!("Starting Export HTTP server on {}", addr);
-    let listener = tokio::net::TcpListener::bind(addr).await?;
-    axum::serve(listener, app).await?;
-    Ok(())
 }
 
 async fn export_handler(

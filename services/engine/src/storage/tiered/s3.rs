@@ -21,7 +21,8 @@ impl S3Client {
             endpoint: endpoint.to_owned(),
         };
         let credentials = Credentials::new(Some(access_key), Some(secret_key), None, None, None)?;
-        let bucket = Bucket::new(bucket_name, region, credentials)?;
+        let mut bucket = Bucket::new(bucket_name, region, credentials)?;
+        bucket.set_path_style();
         Ok(Self {
             bucket: Box::new(bucket),
         })

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historian - Config Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card h3 {
+            color: #888;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .device-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .device-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .device-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .device-item h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .device-item p {
+            color: #666;
+            font-size: 0.9em;
+            margin: 4px 0;
+        }
+
+        .device-item .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .register-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .register-item {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .register-item input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-delete:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.5);
+        }
+
+        .btn-delete:active {
+            transform: scale(0.95);
+        }
+
+        .btn-deploy {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+            margin-right: 10px;
+        }
+
+        .btn-deploy:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.5);
+        }
+
+        .btn-deploy:active {
+            transform: scale(0.95);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+            margin-right: 10px;
+        }
+
+        .btn-edit:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(255, 152, 0, 0.5);
+        }
+
+        .btn-edit:active {
+            transform: scale(0.95);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 8px;
+            margin-right: 5px;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.running {
+            background: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .status-badge.running::before {
+            content: '●';
+            color: #0f5132;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.stopped {
+            background: #e2e3e5;
+            color: #41464b;
+            border: 1px solid #d3d6d8;
+        }
+
+        .status-badge.connected {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        .status-badge.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-badge.idle {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏭 Historian Config Manager <span
+                    style="font-size:0.5em; color:rgba(255,255,255,0.7); font-weight:normal;">v1.3</span></h1>
+            <p>Modbus Device Configuration Dashboard</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Devices</h3>
+                <div class="value" id="totalDevices">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Devices</h3>
+                <div class="value" id="activeDevices">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Registers</h3>
+                <div class="value" id="totalRegisters">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Config Files</h3>
+                <div class="value" id="configFiles">0</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Add/Edit Device Form -->
+            <div class="card">
+                <h2 id="formTitle">➕ Add New Device</h2>
+                <form id="deviceForm">
+                    <input type="hidden" id="editDeviceId">
+
+                    <div class="form-group">
+                        <label>Device Name</label>
+                        <input type="text" id="deviceName" placeholder="PLC-001" required>
+                    </div>
+                    <!-- ... other fields ... -->
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="deviceDesc" placeholder="Main production line PLC">
+                    </div>
+                    <div class="form-group">
+                        <label>IP Address</label>
+                        <input type="text" id="deviceIP" placeholder="192.168.1.10" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Port</label>
+                        <input type="number" id="devicePort" value="502" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit ID</label>
+                        <input type="number" id="deviceUnitID" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Poll Interval (ms)</label>
+                        <input type="number" id="devicePollInterval" value="1000" required>
+                    </div>
+
+                    <div class="register-section">
+                        <h3>Registers</h3>
+                        <div id="registersList">
+                            <div class="register-item">
+                                <input type="number" placeholder="Address" class="reg-address" value="0">
+                                <input type="text" placeholder="Name (e.g., Factory1.Line1.Temp)" class="reg-name">
+                                <select class="reg-type">
+                                    <option value="Float32">Float32</option>
+                                    <option value="Int16">Int16</option>
+                                    <option value="UInt16">UInt16</option>
+                                    <option value="Int32">Int32</option>
+                                    <option value="UInt32">UInt32</option>
+                                </select>
+                                <button type="button" class="btn btn-small" style="background:#dc3545; width:auto;"
+                                    onclick="this.parentElement.remove()">❌</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-small" onclick="addRegister()">+ Add Register</button>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn" id="submitBtn">Create Device</button>
+                        <button type="button" class="btn" id="cancelBtn" style="background:#6c757d; display:none;"
+                            onclick="resetForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Device List -->
+            <div class="card">
+                <h2>📋 Devices</h2>
+                <div class="device-list" id="deviceList">
+                    <p style="text-align: center; color: #999;">Loading devices...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div id="notificationMessage"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8090/api/v1';
+
+        // Load devices on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDevices();
+            setInterval(loadDevices, 5000); // Refresh every 5 seconds
+        });
+
+        // Add register field
+        function addRegister(address = '', name = '', type = 'Float32') {
+            const registersList = document.getElementById('registersList');
+            const newRegister = document.createElement('div');
+            newRegister.className = 'register-item';
+            newRegister.innerHTML = `
+                <input type="number" placeholder="Address" class="reg-address" value="${address}">
+                <input type="text" placeholder="Name" class="reg-name" value="${name}">
+                <select class="reg-type">
+                    <option value="Float32" ${type === 'Float32' ? 'selected' : ''}>Float32</option>
+                    <option value="Int16" ${type === 'Int16' ? 'selected' : ''}>Int16</option>
+                    <option value="UInt16" ${type === 'UInt16' ? 'selected' : ''}>UInt16</option>
+                    <option value="Int32" ${type === 'Int32' ? 'selected' : ''}>Int32</option>
+                    <option value="UInt32" ${type === 'UInt32' ? 'selected' : ''}>UInt32</option>
+                </select>
+                <button type="button" class="btn btn-small" style="background:#dc3545; width:auto;" onclick="this.parentElement.remove()">❌</button>
+            `;
+            registersList.appendChild(newRegister);
+        }
+
+        // Load devices
+        async function loadDevices() {
+            try {
+                const response = await fetch(`${API_URL}/devices/modbus`);
+                const data = await response.json();
+
+                displayDevices(data.devices || []);
+                updateStats(data.devices || []);
+            } catch (error) {
+                console.error('Error loading devices:', error);
+            }
+        }
+
+        // Display devices
+        function displayDevices(devices) {
+            const deviceList = document.getElementById('deviceList');
+
+            if (devices.length === 0) {
+                deviceList.innerHTML = '<p style="text-align: center; color: #999;">No devices yet. Add your first device!</p>';
+                return;
+            }
+
+            deviceList.innerHTML = devices.map(device => {
+                const deployStatus = device.deployment_status || 'not_deployed';
+                const isDeployed = deployStatus === 'deployed';
+                const deployClass = isDeployed ? 'running' : 'stopped';
+                const deployText = isDeployed ? 'Deployed' : 'Not Deployed';
+
+                const connStatus = device.connection_status || 'idle';
+                let connClass = 'idle';
+                let connText = 'Idle';
+
+                if (connStatus === 'connected') { connClass = 'connected'; connText = 'Connected'; }
+                else if (connStatus === 'disconnected') { connClass = 'disconnected'; connText = 'Disconnected'; }
+
+                // Extract device info properly (handling potential nested structure if enrichment changed it, but our new map uses flat IP/Port but "device" obj)
+                // Wait, backend enrichment creates a map:
+                /*
+                   devMap["device"] = dev.Device (struct)
+                   devMap["ip"] = dev.IP
+                   devMap["port"] = dev.Port
+                   ...
+                */
+                // So device.device.name works. device.ip works.
+
+                return `
+                <div class="device-item">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <h3>${device.device.name}</h3>
+                            <p><strong>IP:</strong> ${device.ip}:${device.port} | <strong>Unit ID:</strong> ${device.unit_id}</p>
+                            <p><strong>Poll Interval:</strong> ${device.poll_interval_ms}ms</p>
+                            <p><strong>Registers:</strong> ${device.registers ? device.registers.length : 0}</p>
+                            
+                            <div style="margin-top: 5px;">
+                                <span class="status-badge ${deployClass}" title="Container Status">📦 ${deployText}</span>
+                                <span class="status-badge ${connClass}" title="Connection Status">🔌 ${connText}</span>
+                            </div>
+                        </div>
+                        <div>
+                             <button class="btn-edit" onclick="editDevice('${device.device.id}')" title="Edit Device">
+                                ✏️
+                            </button>
+                            <button class="btn-deploy" onclick="deployDevice('${device.device.id}', '${device.device.name}')" title="Deploy / Hot Reload">
+                                🚀
+                            </button>
+                            <button class="btn-delete" onclick="deleteDevice('${device.device.id}', '${device.device.name}')" title="Delete device">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Update stats
+        function updateStats(devices) {
+            document.getElementById('totalDevices').textContent = devices.length;
+            document.getElementById('activeDevices').textContent =
+                devices.filter(d => d.runtime_status === 'running').length;
+            document.getElementById('totalRegisters').textContent =
+                devices.reduce((sum, d) => sum + (d.registers ? d.registers.length : 0), 0);
+            document.getElementById('configFiles').textContent = devices.length; // Actually DB records
+        }
+
+        // Edit Device (Populate Form)
+        async function editDevice(deviceId) {
+            try {
+                // Add timestamp to prevent caching
+                const response = await fetch(`${API_URL}/devices/modbus/${deviceId}?t=${new Date().getTime()}`);
+                const data = await response.json();
+
+                if (!response.ok) throw new Error(data.error || 'Failed to fetch device details');
+
+                console.log('Edit Device Data:', data); // Debug log
+
+                // Data mapping with validation
+                const device = data;
+                if (!device || !device.device) {
+                    console.error('Invalid data structure:', data);
+                    throw new Error('Invalid device data structure from API');
+                }
+
+                // Populate Form Fields
+                document.getElementById('editDeviceId').value = device.device.id;
+                document.getElementById('deviceName').value = device.device.name;
+                document.getElementById('deviceDesc').value = device.device.description;
+                document.getElementById('deviceIP').value = device.ip;
+                document.getElementById('devicePort').value = device.port;
+                document.getElementById('deviceUnitID').value = device.unit_id;
+                document.getElementById('devicePollInterval').value = device.poll_interval_ms;
+
+                // Populate Registers
+                const registersList = document.getElementById('registersList');
+                registersList.innerHTML = ''; // Clear existing
+                if (device.registers && device.registers.length > 0) {
+                    device.registers.forEach(reg => {
+                        addRegister(reg.address, reg.name, reg.data_type);
+                    });
+                } else {
+                    // Add one empty row if none
+                    addRegister();
+                }
+
+                // Change UI to Edit Mode
+                document.getElementById('formTitle').textContent = `✏️ Edit Device: ${device.device.name}`;
+                document.getElementById('submitBtn').textContent = 'Update Device';
+                document.getElementById('submitBtn').style.background = 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+
+                // Scroll to form
+                document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Reset Form (Cancel Edit)
+        function resetForm() {
+            document.getElementById('deviceForm').reset();
+            document.getElementById('editDeviceId').value = '';
+            document.getElementById('formTitle').textContent = '➕ Add New Device';
+            document.getElementById('submitBtn').textContent = 'Create Device';
+            document.getElementById('submitBtn').style.background = ''; // Reset gradient
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.getElementById('registersList').innerHTML = '';
+            addRegister(); // Add one default row
+        }
+
+        // Deploy device
+        async function deployDevice(deviceId, deviceName) {
+            showNotification(`Deploying "${deviceName}"...`, 'success');
+
+            try {
+                const response = await fetch(`${API_URL}/devices/${deviceId}/deploy`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification(`Success: ${result.message} (${result.action})`, 'success');
+                    loadDevices(); // Refresh status
+                } else {
+                    showNotification(`Error: ${result.error || 'Deployment failed'}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('deviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Collect register data
+            const registerItems = document.querySelectorAll('.register-item');
+            const registers = Array.from(registerItems).map(item => ({
+                address: parseInt(item.querySelector('.reg-address').value),
+                name: item.querySelector('.reg-name').value,
+                data_type: item.querySelector('.reg-type').value
+            })).filter(reg => reg.name);
+
+            const deviceData = {
+                name: document.getElementById('deviceName').value,
+                description: document.getElementById('deviceDesc').value,
+                ip: document.getElementById('deviceIP').value,
+                port: parseInt(document.getElementById('devicePort').value),
+                unit_id: parseInt(document.getElementById('deviceUnitID').value),
+                poll_interval_ms: parseInt(document.getElementById('devicePollInterval').value),
+                registers: registers
+            };
+
+            const editId = document.getElementById('editDeviceId').value;
+            const isUpdate = !!editId;
+            const url = isUpdate ? `${API_URL}/devices/modbus/${editId}` : `${API_URL}/devices/modbus`;
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(deviceData)
+                });
+
+                if (response.ok) {
+                    showNotification(`Device ${isUpdate ? 'updated' : 'created'} successfully!`, 'success');
+                    resetForm();
+                    loadDevices();
+                } else {
+                    const error = await response.json();
+                    showNotification(`Error: ${error.error || 'Failed to save device'}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Delete device
+        async function deleteDevice(deviceId, deviceName) {
+            if (!confirm(`Are you sure you want to delete "${deviceName}"?\n\nThis will:\n- Remove the device from database\n- Delete the config file\n- Stop the ingestor (if running)\n\nThis action cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/devices/${deviceId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showNotification(`Device "${deviceName}" deleted successfully!`, 'success');
+                    loadDevices();
+                } else {
+                    const error = await response.json();
+                    showNotification(`Error: ${error.error || 'Failed to delete device'}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            const messageEl = document.getElementById('notificationMessage');
+
+            messageEl.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

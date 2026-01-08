@@ -30,3 +30,8 @@ pnpm-debug.log*
 /ops/data/
 /ops/logs/
 /data/
+# Generated configs (auto-created by Config Manager)
+config/generated/*.toml
+
+# Backup configs
+config/backup/

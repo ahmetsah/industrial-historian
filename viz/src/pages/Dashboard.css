@@ -1,0 +1,410 @@
+/* Dashboard Page Styles */
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Loading State */
+.dashboard-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    gap: 1rem;
+}
+
+.loading-spinner {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, var(--accent-500) 0%, var(--primary-500) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.spinner-icon {
+    width: 32px;
+    height: 32px;
+    color: white;
+    animation: spin 2s linear infinite;
+}
+
+.dashboard-loading p {
+    font-size: 1rem;
+    color: var(--neutral-400);
+}
+
+/* API Error Banner */
+.api-error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-lg);
+    color: var(--danger-400);
+    margin-bottom: 0.5rem;
+}
+
+.api-error-banner .error-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+.api-error-banner span {
+    flex: 1;
+    font-size: 0.875rem;
+}
+
+/* No Data State */
+.no-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--neutral-500);
+    text-align: center;
+}
+
+.no-data p {
+    font-size: 0.9375rem;
+}
+
+/* Chart Header Actions */
+.chart-header-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+/* Stats Section */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
+@media (max-width: 1280px) {
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chart Section */
+.dashboard-chart-section {
+    margin-bottom: 0.5rem;
+}
+
+/* Two Column Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Card Headers */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--neutral-100);
+    margin: 0;
+}
+
+.header-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--accent-400);
+}
+
+/* Sensor Values Card */
+.sensor-values-card {
+    padding: 1.25rem;
+}
+
+.sensor-values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+@media (max-width: 1280px) {
+    .sensor-values-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .sensor-values-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sensor-value-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    transition: all var(--transition-fast);
+    animation: slide-up 0.5s ease-out backwards;
+    position: relative;
+    overflow: hidden;
+}
+
+.sensor-value-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.sensor-value-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.sensor-type {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--neutral-500);
+    font-weight: 600;
+}
+
+.sensor-trend {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.sensor-trend.trend-up {
+    color: var(--success-400);
+}
+
+.sensor-trend.trend-down {
+    color: var(--danger-400);
+}
+
+.sensor-trend.trend-stable {
+    color: var(--neutral-500);
+}
+
+.sensor-value-main {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+}
+
+.sensor-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--neutral-50);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.sensor-unit {
+    font-size: 0.875rem;
+    color: var(--neutral-400);
+    font-weight: 500;
+}
+
+.sensor-value-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--neutral-500);
+    margin-bottom: 0.5rem;
+}
+
+.sensor-name {
+    font-weight: 500;
+    color: var(--neutral-400);
+}
+
+.sensor-sparkline {
+    height: 24px;
+    margin-top: 0.5rem;
+}
+
+.sparkline-svg {
+    width: 100%;
+}
+
+/* Alarms Card */
+.alarms-card {
+    padding: 1.25rem;
+}
+
+.alarm-count {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--neutral-500);
+}
+
+.alarms-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: -0.25rem;
+    padding: 0.25rem;
+}
+
+.no-alarms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--neutral-500);
+}
+
+.no-alarms-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+}
+
+/* Bottom Section */
+.dashboard-bottom {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-bottom {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Quick Stats / Performance Metrics */
+.quick-stats-card {
+    padding: 1.25rem;
+}
+
+.performance-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1280px) {
+    .performance-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .performance-metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+.metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--neutral-500);
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--neutral-100);
+    font-variant-numeric: tabular-nums;
+}
+
+.metric-suffix {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--neutral-400);
+}
+
+/* Animation delays for staggered entrance */
+.sensor-value-item:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.sensor-value-item:nth-child(2) {
+    animation-delay: 50ms;
+}
+
+.sensor-value-item:nth-child(3) {
+    animation-delay: 100ms;
+}
+
+.sensor-value-item:nth-child(4) {
+    animation-delay: 150ms;
+}
+
+.sensor-value-item:nth-child(5) {
+    animation-delay: 200ms;
+}
+
+.sensor-value-item:nth-child(6) {
+    animation-delay: 250ms;
+}
+
+.dashboard-stats>* {
+    animation: slide-up 0.5s ease-out backwards;
+}
+
+.dashboard-stats>*:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.dashboard-stats>*:nth-child(2) {
+    animation-delay: 75ms;
+}
+
+.dashboard-stats>*:nth-child(3) {
+    animation-delay: 150ms;
+}
+
+.dashboard-stats>*:nth-child(4) {
+    animation-delay: 225ms;
+}

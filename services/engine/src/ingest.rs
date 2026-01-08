@@ -17,6 +17,7 @@ pub async fn start_ingestion(
     client: Client,
     storage: Arc<dyn StorageEngine>,
     subject: &str,
+    metadata_index: Arc<crate::metadata::MetadataIndex>,
 ) -> Result<()> {
     tracing::info!("Subscribing to {}", subject);
     let mut subscriber = client
@@ -32,6 +33,8 @@ pub async fn start_ingestion(
                 continue;
             }
         };
+
+        metadata_index.ensure_sensor_exists(&data.sensor_id).await;
 
         if let Err(e) = storage.write(&data) {
             tracing::error!("Failed to write to storage: {}", e);

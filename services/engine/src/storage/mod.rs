@@ -13,6 +13,9 @@ pub trait StorageEngine: Send + Sync {
         start_ts: i64,
         end_ts: i64,
     ) -> Result<std::pin::Pin<Box<dyn futures::Stream<Item = Result<SensorData>> + Send>>>;
+
+    /// Get all unique sensor IDs from the storage
+    fn get_all_sensor_ids(&self) -> Result<Vec<String>>;
 }
 
 pub mod compression;

@@ -9,14 +9,16 @@ pub struct Publisher {
     buffer: HybridBuffer,
     nats_client: Option<Client>,
     nats_url: String,
+    subject: String,
 }
 
 impl Publisher {
-    pub fn new(buffer: HybridBuffer, nats_url: String) -> Self {
+    pub fn new(buffer: HybridBuffer, nats_url: String, subject: String) -> Self {
         Self {
             buffer,
             nats_client: None,
             nats_url,
+            subject,
         }
     }
 
@@ -108,13 +110,8 @@ impl Publisher {
         let mut buf = Vec::new();
         item.encode(&mut buf)?;
 
-        // --- DUZELTME ---
-        // Eski: let subject = format!("historian.data.{}", item.sensor_id);
-        // Yeni: Sabit "data.raw" konusuna basiyoruz (Ingestion standardimiz)
-        // Ileride bu dinamik olabilir ama simdilik dinleyicimiz "data.>" bekliyor.
-        let subject = "data.raw";
-
-        client.publish(subject.to_string(), buf.into()).await?;
+        // Use configured subject from NATS config
+        client.publish(self.subject.clone(), buf.into()).await?;
         Ok(())
     }
 }

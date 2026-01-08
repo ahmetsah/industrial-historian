@@ -5,7 +5,7 @@ use crate::storage::StorageEngine;
 use anyhow::{Context, Result};
 use dashmap::DashMap;
 use historian_core::SensorData;
-use rocksdb::{Options, DB};
+use rocksdb::{BlockBasedOptions, Cache, Options, DB};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
@@ -30,6 +30,13 @@ impl RocksDBStorage {
         opts.set_write_buffer_size(64 * 1024 * 1024); // 64MB MemTable
         opts.set_max_write_buffer_number(3); // 3 MemTables
         opts.set_target_file_size_base(64 * 1024 * 1024); // 64MB SSTable file size base
+
+        opts.set_target_file_size_base(64 * 1024 * 1024); // 64MB SSTable file size base
+
+        let mut block_opts = BlockBasedOptions::default();
+        let cache = Cache::new_lru_cache(256 * 1024 * 1024); // 256MB
+        block_opts.set_block_cache(&cache);
+        opts.set_block_based_table_factory(&block_opts);
 
         let cfs = vec!["default", "tiering_metadata"];
         let db = DB::open_cf(&opts, path, cfs).context("Failed to open RocksDB")?;
@@ -511,6 +518,37 @@ impl StorageEngine for RocksDBStorage {
         });
 
         Ok(Box::pin(ReceiverStream::new(rx)))
+    }
+
+    fn get_all_sensor_ids(&self) -> Result<Vec<String>> {
+        use std::collections::HashSet;
+        let mut sensor_ids = HashSet::new();
+
+        // 1. Get from buffer
+        for entry in self.buffer.iter() {
+            sensor_ids.insert(entry.key().clone());
+        }
+
+        // 2. Get from RocksDB
+        let iter = self.db.iterator(rocksdb::IteratorMode::Start);
+        for item in iter {
+            let (key, _) = item.context("Failed to read from iterator")?;
+            if key.len() < 9 {
+                continue;
+            }
+
+            // Extract sensor_id from key (format: sensor_id + 0x00 + timestamp)
+            let separator_pos = key.iter().position(|&b| b == 0);
+            if let Some(pos) = separator_pos {
+                if let Ok(sensor_id) = String::from_utf8(key[0..pos].to_vec()) {
+                    sensor_ids.insert(sensor_id);
+                }
+            }
+        }
+
+        let mut result: Vec<String> = sensor_ids.into_iter().collect();
+        result.sort();
+        Ok(result)
     }
 }
 

@@ -1,0 +1,85 @@
+# Modbus Device 1: Main PLC
+[[modbus_devices]]
+ip = "172.29.80.1"
+port = 5020
+unit_id = 1
+poll_interval_ms = 3000
+
+[[modbus_devices.registers]]
+address = 0
+name = "Factory1.Line1.PLC1.Analog.adres_0"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 1
+name = "Factory1.Line1.PLC1.Analog.adres_1"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 2
+name = "Factory1.Line1.PLC1.Analog.adres_2"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 3
+name = "Factory1.Line1.PLC1.Analog.adres_3"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 4
+name = "Factory1.Line1.PLC1.Analog.adres_4"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 5
+name = "Factory1.Line1.PLC1.Analog.adres_5"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 6
+name = "Factory1.Line1.PLC1.Analog.adres_6"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 7
+name = "Factory1.Line1.PLC1.Analog.adres_7"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 8
+name = "Factory1.Line1.PLC1.Analog.adres_8"
+data_type = "Int16"
+
+[[modbus_devices.registers]]
+address = 9
+name = "Factory1.Line1.PLC1.Analog.adres_9"
+data_type = "Int16"
+
+# Modbus Device 2: Secondary PLC (Example - uncomment to enable)
+# [[modbus_devices]]
+# ip = "172.29.80.2"
+# port = 5021
+# unit_id = 1
+# poll_interval_ms = 5000
+#
+# [[modbus_devices.registers]]
+# address = 0
+# name = "Factory1.Line2.PLC2.Temp.T001"
+# data_type = "Float32"
+
+[nats]
+url = "nats://172.29.80.1:4222"
+subject = "data.raw"
+
+[buffer]
+memory_capacity = 10000
+disk_path = "ops/data/ingestor_wal/buffer.wal"
+
+[[calculations]]
+name = "Delta_P"
+expression = "Pressure - 10"
+
+[[calculations]]
+name = "Efficiency"
+expression = "(Temperature / Pressure) * 100"
+

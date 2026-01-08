@@ -7,8 +7,8 @@ workflow_path: "method-greenfield.yaml"
 workflow_status:
   # Discovery Phase
   brainstorm-project: "skipped"
-  research: "required"
-  product-brief: "required"
+  research: "docs/analysis/research/technical-historian-architecture-research-2025-12-02.md"
+  product-brief: "skipped"
   
   # Planning Phase
   prd: "docs/prd.md"
@@ -16,11 +16,11 @@ workflow_status:
   create-ux-design: "conditional"
   
   # Solutioning Phase
-  create-architecture: "required"
-  create-epics-and-stories: "required"
+  create-architecture: "docs/architecture.md"
+  create-epics-and-stories: "docs/epics.md"
   test-design: "recommended"
   validate-architecture: "optional"
-  implementation-readiness: "required"
+  implementation-readiness: "skipped"
   
   # Implementation Phase
-  sprint-planning: "required"
+  sprint-planning: "docs/sprint-artifacts/sprint-status.yaml"

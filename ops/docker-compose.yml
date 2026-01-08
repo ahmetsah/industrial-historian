@@ -1,6 +1,7 @@
 services:
   nats:
     image: nats:latest
+    container_name: ops-nats
     ports:
       - "4222:4222"
       - "8222:8222"
@@ -13,6 +14,7 @@ services:
 
   nats-setup:
     image: natsio/nats-box
+    container_name: ops-nats-setup
     depends_on:
       - nats
     volumes:
@@ -25,6 +27,7 @@ services:
 
   minio:
     image: minio/minio
+    container_name: ops-minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -37,8 +40,19 @@ services:
     networks:
       - historian-net
 
+  minio-setup:
+    image: minio/mc
+    container_name: ops-minio-setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c " until mc alias set myminio http://ops-minio:9000 minioadmin minioadmin; do echo '...waiting...' && sleep 1; done; mc mb myminio/historian-data --ignore-existing; mc anonymous set public myminio/historian-data; exit 0; "
+    networks:
+      - historian-net
+
   postgres:
     image: postgres:16-alpine
+    container_name: ops-postgres
     ports:
       - "5432:5432"
     environment:
@@ -47,8 +61,48 @@ services:
       POSTGRES_DB: historian
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - historian-net
+
+  # Config Manager Service
+  config-manager:
+    build:
+      context: ../services/config-manager
+      dockerfile: Dockerfile
+    container_name: ops-config-manager
+    ports:
+      - "8090:8090"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=historian
+      - CONFIG_DIR=/config/generated
+      - PORT=8090
+    volumes:
+      - ../config/generated:/config/generated
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres
+    networks:
+      - historian-net
+    restart: unless-stopped
+
+  # Config UI - Web Interface for Device Management
+  config-ui:
+    build:
+      context: ../web/config-ui
+      dockerfile: Dockerfile
+    container_name: ops-config-ui
+    ports:
+      - "3001:80"
+    depends_on:
+      - config-manager
+    networks:
+      - historian-net
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4
@@ -62,6 +116,24 @@ services:
       - postgres
     networks:
       - historian-net
+
+  # Viz - Main Dashboard UI
+  viz:
+    build:
+      context: ../viz
+      dockerfile: Dockerfile
+    container_name: ops-viz
+    ports:
+      - "3000:80"
+    depends_on:
+      - engine
+      - config-manager
+      - alarm
+      - audit
+      - auth
+    networks:
+      - historian-net
+    restart: unless-stopped
 
   audit:
     build:
@@ -79,6 +151,7 @@ services:
       - nats
     networks:
       - historian-net
+    restart: always
 
   auth:
     build:
@@ -99,6 +172,7 @@ services:
       - nats
     networks:
       - historian-net
+    restart: always
 
   alarm:
     build:
@@ -116,26 +190,55 @@ services:
       - nats
     networks:
       - historian-net
-
-  ingestor:
-    build:
-      context: ..
-      dockerfile: services/ingestor/Dockerfile
-    container_name: ops-ingestor
-    environment:
-      RUST_LOG: info
-      NATS_URL: nats://nats:4222
-    volumes:
-      - ../config/default.toml:/app/config/default.toml:ro
-      - ingestor_buffer:/app/ops/data/ingestor_wal
-    depends_on:
-      - nats
-    networks:
-      - historian-net
     restart: always
-    # Use host network to access Modbus device on host machine
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+
+  # ============================================================================
+  # MODBUS INGESTORS - Dynamic instances for each device
+  # ============================================================================
+  # To add a new Modbus device ingestor:
+  # 1. Create device via Config Manager API (generates config file)
+  # 2. Add new service below following this template:
+  #
+  # ingestor-DEVICE_NAME:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/ingestor/Dockerfile
+  #   container_name: ops-ingestor-DEVICE_NAME
+  #   environment:
+  #     RUST_LOG: info
+  #     CONFIG_FILE: /config/modbus-DEVICE_NAME
+  #   volumes:
+  #     - ../config/generated:/config:ro
+  #     - ingestor_buffer_DEVICE_NAME:/data/buffer
+  #   depends_on:
+  #     - nats
+  #   networks:
+  #     - historian-net
+  #   restart: unless-stopped
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #
+  # Example: PLC-001
+  # Old ingestor (deprecated - kept for reference)
+  # ingestor:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/ingestor/Dockerfile
+  #   container_name: ops-ingestor
+  #   environment:
+  #     RUST_LOG: info
+  #     NATS_URL: nats://nats:4222
+  #   volumes:
+  #     - ../config/default.toml:/app/config/default.toml:ro
+  #     - ingestor_buffer:/app/ops/data/ingestor_wal
+  #   depends_on:
+  #     - nats
+  #   networks:
+  #     - historian-net
+  #   restart: always
+  #   # Use host network to access Modbus device on host machine
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
 
   engine:
     build:
@@ -145,10 +248,18 @@ services:
     environment:
       RUST_LOG: info
       NATS_URL: nats://nats:4222
-      NATS_SUBJECT: data.raw
+      NATS_SUBJECT: "data.>"
       DB_PATH: /data/rocksdb
       GRPC_ADDR: 0.0.0.0:50051
       HTTP_PORT: 8081
+      # MinIO / Tiering Config
+      S3_ENDPOINT: http://ops-minio:9000
+      S3_BUCKET: historian-data
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      TIERING_ENABLED: "true"
+      TIERING_MIN_AGE_MS: 300000 # 5 minutes
+
     ports:
       - "50051:50051" # gRPC Query API
       - "8081:8081" # HTTP Export API
@@ -156,7 +267,6 @@ services:
       - engine_data:/data
     depends_on:
       - nats
-      - ingestor
     networks:
       - historian-net
     restart: always
@@ -175,21 +285,29 @@ services:
       - historian-net
     restart: always
 
-  viz:
+  # Data Publisher - Generates simulated sensor data for testing
+  data-publisher:
     build:
-      context: ../viz
+      context: ../services/sim
       dockerfile: Dockerfile
-    container_name: ops-viz
-    ports:
-      - "3000:80"
+    container_name: ops-data-publisher
+    environment:
+      NATS_URL: nats://nats:4222
+      PUBLISH_INTERVAL: "1.0"
+      PYTHONUNBUFFERED: 1
+    command: [ "python", "src/publisher.py" ]
+    depends_on:
+      - nats
     networks:
       - historian-net
+    restart: always
 
 volumes:
   nats_data:
   minio_data:
   pg_data:
-  ingestor_buffer:
+  ingestor_buffer: # Old - deprecated
+
   engine_data:
 
 
